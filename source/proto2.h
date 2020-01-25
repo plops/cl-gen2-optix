@@ -1,0 +1,17 @@
+void mainLoop ();
+void run ();
+int main ();
+void keyCallback (GLFWwindow* window, int key, int scancode, int action, int mods);
+void errorCallback (int err, const char* description);
+static void framebufferResizeCallback (GLFWwindow* window, int width, int height);
+void initWindow ();
+void cleanupWindow ();
+void uploadTex (const void* image, int w, int h);
+void initDraw ();
+void cleanupDraw ();
+void drawFrame ();
+void initGui ();
+void cleanupGui ();
+float get_FixedDeque (void* data, int idx);
+bool compare_Power (BinaryResponse a, BinaryResponse b);
+void drawGui ();
