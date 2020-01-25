@@ -39,19 +39,20 @@
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
     (defun ox (code)
-      `(let ((res ,code))
-	 (declare (type OptixResult res))
-	 (unless (== OPTIX_SUCCESS res)
-	   ,(logprint (format nil (string "FAIL: optix ~a")
-			      (cl-cpp-generator2::emit-c :code code))
-		      `(res)))))
+      `(progn
+	 (let ((res ,code))
+	  (declare (type OptixResult res))
+	  (unless (== OPTIX_SUCCESS res)
+	    ,(logprint (format nil (string "FAIL: optix ~a")
+			       (cl-cpp-generator2::emit-c :code code))
+		       `(res))))))
     (defun cu (code)
-      `(let ((res ,code))
-	 (declare (type OptixResult res))
-	 (unless (== CUDA_SUCCESS res)
-	   ,(logprint (format nil (string "FAIL: cuda ~a")
-			      (cl-cpp-generator2::emit-c :code code))
-		      `(res)))))
+      `(progn
+	 (let ((res ,code))
+	  (unless (== CUDA_SUCCESS res)
+	    ,(logprint (format nil (string "FAIL: cuda ~a")
+			       (cl-cpp-generator2::emit-c :code code))
+		       `(res))))))
     (defun logprint (msg &optional rest)
       `(do0
 	" "
@@ -376,27 +377,23 @@
 	       (cuctx :type CUcontext)
 	       (oxctx :type OptixDeviceContext))
 	      (do0
-	       #+nil 
 	       (include <cuda_runtime.h>
-		      <optix.h>
-		      <optix_stubs.h>
-		      <optix_function_table_definition.h>)
+			<optix.h>
+			<optix_stubs.h>
+			<optix_function_table_definition.h>)
 	     (defun createContext ()
 	       (declare (type "static void"))
-	       ,(ox `(SetDevice ,(g `dev_id)))
-	       ,(ox `(StreamCreate (ref ,(g `stream))))
+	       ,(cu `(cudaSetDevice ,(g `dev_id)))
+	       ,(cu `(cudaStreamCreate (ref ,(g `stream))))
 	       (cudaGetDeviceProperties (ref ,(g `dev_prop))
 					,(g `dev_id))
 	       ,(logprint "running on device:"
-			  `(,(g `dev_props.name)))
+			  `(,(g `dev_prop.name)))
 	       ,(cu `(cuCtxGetCurrent (ref ,(g `cuctx))))
 	       ,(ox
 		 `(optixDeviceContextCreate
 		   ,(g `cuctx) 0 (ref ,(g `oxctx))))
-	       ,(ox
-		 `(optixDeviceContextSetLogCallback
-		   ,(g `oxctx)
-		   (lambda (level
+	       (let ((log (lambda (level
 			    tag
 			    msg
 			    data)
@@ -411,8 +408,12 @@
 				`(level
 				  tag
 				  msg))
-		     )
-		   nullptr 4))
+		     )))
+		,(ox
+		  `(optixDeviceContextSetLogCallback
+		    ,(g `oxctx)
+		   log
+		    nullptr 4)))
 	       )
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
@@ -506,7 +507,7 @@
 		    (include <cuda_runtime.h>
 		      <optix.h>
 		      <optix_stubs.h>
-		      <optix_function_table_definition.h>)
+		      )
 		    
 		    (do0
 		     "template <typename T, int MaxLen>"

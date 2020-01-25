@@ -10,7 +10,6 @@
 #include <deque>
 #include <mutex>
 #include <optix.h>
-#include <optix_function_table_definition.h>
 #include <optix_stubs.h>
 #include <queue>
 #include <string>
