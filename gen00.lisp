@@ -38,6 +38,13 @@
   (progn
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
+    (defun oxprint (code)
+      `(let ((res ,code))
+	 (declare (type OptixResult res))
+	 (unless (== OPTIX_SUCCESS res)
+	   ,(logprint (format nil (string "FAIL: optix ~a")
+			      (cl-cpp-generator2::emit-c :code code))
+		      `(res)))))
     (defun logprint (msg &optional rest)
       `(do0
 	" "
@@ -362,7 +369,7 @@
 		      <optix.h>
 		      <optix_stubs.h>
 		      <optix_function_table_definition.h>)
-
+	     
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -371,6 +378,7 @@
 		 (cudaGetDeviceCount &num_devices))
 	       (when (== 0 num_devices)
 		 ,(logprint (string "FAIL: no cuda device")))
+	       ,(oxprint `(optixInit))
 	       )
 	     (defun cleanupOptix ()
 	       )
