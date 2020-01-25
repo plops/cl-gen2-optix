@@ -16,7 +16,7 @@ extern State state;
 void initGui() {
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("initGui") << (" ")

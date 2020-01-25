@@ -45,7 +45,7 @@
 	(do0
 	 ;("std::setprecision" 3)
 	 (<< "std::cout"
-	     "std::endl"
+	     ;;"std::endl"
 	     ("std::setw" 10)
 	     (dot ("std::chrono::high_resolution_clock::now")
 		  (time_since_epoch)
@@ -188,11 +188,12 @@
 		 ,(logprint "exit mainLoop" `()))
 	       (defun run ()
 		 ,(logprint "start run" `())
-	
+		 
 		 (initWindow)
 		 (initGui)
-
+		 
 		 (initDraw)
+		 (initOptix)
 		 
 		 (mainLoop)
 		 ,(logprint "finish run" `())))
@@ -210,7 +211,7 @@
 		(do0
 		 (run)
 		 ,(logprint "start cleanups" `())
-		
+		 (cleanupOptix)
 		 (cleanupDraw)
 		 (cleanupGui)
 		 (cleanupWindow)
@@ -311,6 +312,7 @@
 				 )
 		
 		))))
+  
 
   
   (define-module
@@ -352,6 +354,27 @@
 	       (ImGui_ImplOpenGL2_RenderDrawData
 		("ImGui::GetDrawData"))
 	       ))))
+
+  (define-module
+      `(optix ()
+	    (do0
+	     (include <cuda_runtime.h>
+		      <optix.h>
+		      <optix_stubs.h>
+		      <optix_function_table_definition.h>)
+
+	     (defun initOptix ()
+	       ,(logprint "initOptix" '())
+	       (cudaFree 0)
+	       (let ((num_devices))
+		 (declare (type int num_devices))
+		 (cudaGetDeviceCount &num_devices))
+	       (when (== 0 num_devices)
+		 ,(logprint (string "FAIL: no cuda device")))
+	       )
+	     (defun cleanupOptix ()
+	       )
+	     )))
 
   
   (progn

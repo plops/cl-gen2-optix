@@ -1,6 +1,9 @@
 CXX=g++ 
-LDFLAGS=-lglfw  -lGL
+LDFLAGS=-lglfw  -lGL \
+-L/opt/cuda/targets/x86_64-linux/lib -lcudart
 CXXFLAGS=-ffast-math -std=gnu++1z -O0 \
+-I/opt/cuda/targets/x86_64-linux/include \
+-I/home/martin/optix/include \
 -march=native #-ggdb 
 # -fsanitize=address
 

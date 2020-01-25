@@ -16,7 +16,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
 void errorCallback(int err, const char *description) {
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("error") << (" ")
@@ -27,7 +27,7 @@ static void framebufferResizeCallback(GLFWwindow *window, int width,
                                       int height) {
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("resize") << (" ")
@@ -44,7 +44,7 @@ void initWindow() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     state._window = glfwCreateWindow(930, 930, "vis window", NULL, NULL);
 
-    (std::cout) << (std::endl) << (std::setw(10))
+    (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
                         .count())

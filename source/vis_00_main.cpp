@@ -15,7 +15,7 @@ State state = {};
 void mainLoop() {
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("mainLoop") << (" ")
@@ -28,7 +28,7 @@ void mainLoop() {
   }
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("exit mainLoop")
@@ -37,7 +37,7 @@ void mainLoop() {
 void run() {
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("start run") << (" ")
@@ -45,10 +45,11 @@ void run() {
   initWindow();
   initGui();
   initDraw();
+  initOptix();
   mainLoop();
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("finish run") << (" ")
@@ -59,7 +60,7 @@ int main() {
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("start main") << (" ")
@@ -68,17 +69,18 @@ int main() {
   run();
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("start cleanups")
       << (" ") << (std::endl) << (std::flush);
+  cleanupOptix();
   cleanupDraw();
   cleanupGui();
   cleanupWindow();
 
   (std::cout)
-      << (std::endl) << (std::setw(10))
+      << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("end main") << (" ")
