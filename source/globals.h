@@ -6,8 +6,12 @@
 
 #include <complex>
 #include <condition_variable>
+#include <cuda_runtime.h>
 #include <deque>
 #include <mutex>
+#include <optix.h>
+#include <optix_function_table_definition.h>
+#include <optix_stubs.h>
 #include <queue>
 #include <string>
 #include <thread>
@@ -27,6 +31,11 @@ public:
 struct State {
   typeof(std::chrono::high_resolution_clock::now().time_since_epoch().count())
       _start_time;
+  OptixDeviceContext oxctx;
+  CUcontext cuctx;
+  cudaDeviceProp dev_prop;
+  CUstream stream;
+  const int dev_id;
   GLuint _fontTex;
   bool _framebufferResized;
   GLFWwindow *_window;

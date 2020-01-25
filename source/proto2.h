@@ -13,5 +13,6 @@ void drawFrame ();
 void initGui ();
 void cleanupGui ();
 void drawGui ();
+void createContext ();
 void initOptix ();
 void cleanupOptix ();

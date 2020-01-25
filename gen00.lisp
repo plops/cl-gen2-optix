@@ -38,11 +38,18 @@
   (progn
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
-    (defun oxprint (code)
+    (defun ox (code)
       `(let ((res ,code))
 	 (declare (type OptixResult res))
 	 (unless (== OPTIX_SUCCESS res)
 	   ,(logprint (format nil (string "FAIL: optix ~a")
+			      (cl-cpp-generator2::emit-c :code code))
+		      `(res)))))
+    (defun cu (code)
+      `(let ((res ,code))
+	 (declare (type OptixResult res))
+	 (unless (== CUDA_SUCCESS res)
+	   ,(logprint (format nil (string "FAIL: cuda ~a")
 			      (cl-cpp-generator2::emit-c :code code))
 		      `(res)))))
     (defun logprint (msg &optional rest)
@@ -363,13 +370,50 @@
 	       ))))
 
   (define-module
-      `(optix ()
-	    (do0
-	     (include <cuda_runtime.h>
+      `(optix ((dev_id :type "const int")
+	       (stream :type CUstream)
+	       (dev_prop :type cudaDeviceProp)
+	       (cuctx :type CUcontext)
+	       (oxctx :type OptixDeviceContext))
+	      (do0
+	       #+nil 
+	       (include <cuda_runtime.h>
 		      <optix.h>
 		      <optix_stubs.h>
 		      <optix_function_table_definition.h>)
-	     
+	     (defun createContext ()
+	       (declare (type "static void"))
+	       ,(ox `(SetDevice ,(g `dev_id)))
+	       ,(ox `(StreamCreate (ref ,(g `stream))))
+	       (cudaGetDeviceProperties (ref ,(g `dev_prop))
+					,(g `dev_id))
+	       ,(logprint "running on device:"
+			  `(,(g `dev_props.name)))
+	       ,(cu `(cuCtxGetCurrent (ref ,(g `cuctx))))
+	       ,(ox
+		 `(optixDeviceContextCreate
+		   ,(g `cuctx) 0 (ref ,(g `oxctx))))
+	       ,(ox
+		 `(optixDeviceContextSetLogCallback
+		   ,(g `oxctx)
+		   (lambda (level
+			    tag
+			    msg
+			    data)
+		     (declare
+		      (type "unsigned int" level)
+		      (type "const char*"
+			    tag
+			    msg)
+		      (type "void*"
+			    data))
+		     ,(logprint "context_log"
+				`(level
+				  tag
+				  msg))
+		     )
+		   nullptr 4))
+	       )
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -378,7 +422,8 @@
 		 (cudaGetDeviceCount &num_devices))
 	       (when (== 0 num_devices)
 		 ,(logprint (string "FAIL: no cuda device")))
-	       ,(oxprint `(optixInit))
+	       ,(ox `(optixInit))
+	       (createContext)
 	       )
 	     (defun cleanupOptix ()
 	       )
@@ -446,6 +491,7 @@
 		    "#define GLOBALS_H"
 		    " "
 		    (include <GLFW/glfw3.h>)
+		    
 		    " "
 		    " "
 		    (include <thread>
@@ -456,6 +502,12 @@
 			     <condition_variable>
 			     <complex>)
 
+
+		    (include <cuda_runtime.h>
+		      <optix.h>
+		      <optix_stubs.h>
+		      <optix_function_table_definition.h>)
+		    
 		    (do0
 		     "template <typename T, int MaxLen>"
 		     (defclass FixedDequeTM "public std::deque<T>"
