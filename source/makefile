@@ -1,5 +1,5 @@
 CXX=g++ 
-LDFLAGS=-llgfw  -lGL
+LDFLAGS=-lglfw  -lGL
 CXXFLAGS=-ffast-math -std=gnu++1z -O0 \
 -march=native #-ggdb 
 # -fsanitize=address

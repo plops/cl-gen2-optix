@@ -336,16 +336,7 @@
 	       (ImGui_ImplOpenGL2_Shutdown)
 	       (ImGui_ImplGlfw_Shutdown)
 	       ("ImGui::DestroyContext"))
-	     (defun get_FixedDeque (data idx)
-	       (declare (type "void*" data)
-			(type int idx )
-			(values float))
-	       (let ((data1 (reinterpret_cast<FixedDeque<120>*> data)))
-		 (return (aref (aref data1 0) idx))))
-	     (defun compare_Power (a b)
-	       (declare (type BinaryResponse a b)
-			(values bool))
-	       (return (< a.power b.power)))
+	     
 	     (defun drawGui ()
 	       #+nil (<< "std::cout"
 		   (string "g")

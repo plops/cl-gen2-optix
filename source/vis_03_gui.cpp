@@ -32,13 +32,6 @@ void cleanupGui() {
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 }
-float get_FixedDeque(void *data, int idx) {
-  auto data1 = reinterpret_cast<FixedDeque<120> *>(data);
-  return data1[0][idx];
-}
-bool compare_Power(BinaryResponse a, BinaryResponse b) {
-  return a.power < b.power;
-}
 void drawGui() {
   ImGui_ImplOpenGL2_NewFrame();
   ImGui_ImplGlfw_NewFrame();

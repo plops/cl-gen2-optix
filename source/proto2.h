@@ -12,6 +12,4 @@ void cleanupDraw ();
 void drawFrame ();
 void initGui ();
 void cleanupGui ();
-float get_FixedDeque (void* data, int idx);
-bool compare_Power (BinaryResponse a, BinaryResponse b);
 void drawGui ();
