@@ -437,8 +437,7 @@
 		     ,(logprint "context_log"
 				`(level
 				  tag
-				  msg))
-		     )))
+				  msg)))))
 		,(ox
 		  `(optixDeviceContextSetLogCallback
 		    ,(g `oxctx)
@@ -448,7 +447,20 @@
 	       ,(set-members-clear`(,(g `module_compile_options)
 				    :maxRegisterCount 50
 				    :optLevel OPTIX_COMPILE_OPTIMIZATION_DEFAULT
-				    :debugLevel OPTIX_COMPILE_DEBUG_LEVEL_NONE)))
+				     :debugLevel OPTIX_COMPILE_DEBUG_LEVEL_NONE))
+	       ,(set-members-clear`(,(g `pipeline_compile_options)
+				     :traversableGraphFlags OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS
+				     :usesMotionBlur false
+				     :numPayloadValues 2
+				     :numAttributeValues  2
+				     :exceptionFlags     OPTIX_EXCEPTION_FLAG_NONE
+				     :pipelineLaunchParamsVariableName (string "optixLaunchParams") 
+      
+				     ))
+	       ,(set-members-clear`(,(g `pipeline_link_options)
+				           
+				     :overrideUsesMotionBlur  false
+				     :maxTraceDepth           2)))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
