@@ -460,7 +460,24 @@
 	       ,(set-members-clear`(,(g `pipeline_link_options)
 				           
 				     :overrideUsesMotionBlur  false
-				     :maxTraceDepth           2)))
+				     :maxTraceDepth           2))
+	       
+	       (let ((ptx (string ""))
+		     (log[2048])
+		     (size_log (sizeof log)))
+		 (declare (type char log[2048])
+			  (type "const std::string" ptx))
+		 ,(ox `(optixModuleCreateFromPTX
+			,(g `oxctx)
+			(ref ,(g `module_compile_options))
+			(ref ,(g `pipeline_compile_options))
+			(ptx.c_str)
+			(ptx.size)
+			log
+			&size_log
+			(ref ,(g `module))))
+		 (when (< 1 size_log)
+		   ,(logprint "" `(size_log log)))))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
