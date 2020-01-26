@@ -14,5 +14,6 @@ void initGui ();
 void cleanupGui ();
 void drawGui ();
 void createContext ();
+void createModule ();
 void initOptix ();
 void cleanupOptix ();

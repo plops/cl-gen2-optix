@@ -38,6 +38,26 @@
   (progn
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
+
+    (defun set-members (params)
+        "setf on multiple member variables of an instance"
+        (destructuring-bind (instance &rest args) params
+          `(setf ,@(loop for i from 0 below (length args) by 2 appending
+                        (let ((keyword (elt args i))
+                              (value (elt args (+ i 1))))
+                          `((dot ,instance ,keyword) ,value))))))
+
+    (defun set-members-clear (params)
+        "setf on multiple member variables of an instance"
+        (destructuring-bind (instance &rest args) params
+          `(do0
+	    (setf ,instance (curly))
+	    (setf
+	     ,@(loop for i from 0 below (length args) by 2 appending
+		    (let ((keyword (elt args i))
+			  (value (elt args (+ i 1))))
+		      `((dot ,instance ,keyword) ,value)))))))
+
     (defun ox (code)
       `(progn
 	 (let ((res ,code))
@@ -378,7 +398,7 @@
 		    collect
 		      `(,(format nil "~a_programs" e) :type "std::vector<OptixProgramGroup>"))
 	       (hitgroup_records_buffer :type CUDABuffer)
-	       (shader_bindings_table :type OptixShaderBindingsTable)
+	       (shader_bindings_table :type OptixShaderBindingTable)
 	       ;;
 	       (launch_params :type LaunchParams)
 	       (launch_params_buffer :type CUDABuffer)
@@ -425,7 +445,10 @@
 		   log
 		   nullptr 4))))
 	     (defun createModule ()
-	       (setf module_compile))
+	       ,(set-members-clear`(,(g `module_compile_options)
+				    :maxRegisterCount 50
+				    :optLevel OPTIX_COMPILE_OPTIMIZATION_DEFAULT
+				    :debugLevel OPTIX_COMPILE_DEBUG_LEVEL_NONE)))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -520,10 +543,65 @@
 			     <optix.h>
 			     <optix_stubs.h>)
 
+		    (include <cassert>)
+
 		    (defstruct0 LaunchParams
 			(frameID int)
 		      (colorBuffer uint32_t*)
-		      (fbSize vec2i))
+		      ;(fbSize vec2i)
+		      )
+
+		    (do0
+		     (defclass CUDABuffer ()
+		       (let ((_d_ptr)
+			     (_size_in_bytes))
+			 (declare (type void* _d_ptr)
+				  (type size_t _size_in_bytes)))
+		       (defun d_pointer ()
+			 (declare (values CUdeviceptr))
+			 (return (reinterpret_cast<CUdeviceptr> _d_ptr)))
+		       (defun resize (size)
+			 (declare (type size_t size))
+			 (when _d_ptr
+			   (free))
+			 (alloc size))
+		       (defun alloc (size)
+			 (declare (type size_t size))
+			 (assert (== nullptr _d_ptr))
+			 (setf this->_size_in_bytes size)
+			 ,(cu `(cudaMalloc (static_cast<void**> &_d_ptr)
+					  _size_in_bytes)))
+		       (defun free ()
+			 ,(cu `(cudaFree _d_ptr))
+			 (setf _d_ptr nullptr
+			       _size_in_bytes 0))
+		       (defun alloc_and_upload (vt)
+			 (declare (type "const std::vector<T>&" vt)
+				  (values "template<typename T> void"))
+			 (alloc (* (vt.size)
+				   (sizeof T)))
+			 (upload ("static_cast<const T*>" (vt.data))
+				 (vt.size)))
+		       (defun upload (dat count)
+			 (declare (type "const T*" dat)
+				  (type size_t count)
+				  (values "template<typename T> void"))
+			 (assert (!= nullptr _d_ptr))
+			 (assert (== _size_in_bytes (* count (sizeof T))))
+			 ,(cu `(cudaMemcpy _d_ptr
+					  (static_cast<void*> dat)
+					  (* count (sizeof T))
+					  cudaMemcpyHostToDevice)))
+		       (defun download (dat count)
+			 (declare (type "T*" dat)
+				  (type size_t count)
+				  (values "template<typename T> void"))
+			 (assert (!= nullptr _d_ptr))
+			 (assert (== _size_in_bytes (* count (sizeof T))))
+			 ,(cu `(cudaMemcpy  (static_cast<void*> dat)
+					  _d_ptr
+					  (* count (sizeof T))
+					  cudaMemcpyDeviceToHost)))))
 		    
 		    (do0
 		     "template <typename T, int MaxLen>"
