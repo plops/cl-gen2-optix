@@ -243,15 +243,13 @@
 	 (_framebufferResized :direction 'out :type bool)
 	 )
 	(do0
-	 
 	 (defun keyCallback (window key scancode action mods)
 	   (declare (type GLFWwindow* window)
 		    (type int key scancode action mods))
 	   (when (and (or (== key GLFW_KEY_ESCAPE)
 			  (== key GLFW_KEY_Q))
 		      (== action GLFW_PRESS))
-	     (glfwSetWindowShouldClose window GLFW_TRUE))
-	   )
+	     (glfwSetWindowShouldClose window GLFW_TRUE)))
 	 (defun errorCallback (err description)
 	   (declare (type int err)
 		    (type "const char*" description))
@@ -268,7 +266,6 @@
 	   (declare (values void))
 	   (when (glfwInit)
 	     (do0
-	      
 	      (glfwSetErrorCallback errorCallback)
 	      
 	      (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 2)
@@ -292,10 +289,7 @@
 	 (defun cleanupWindow ()
 	   (declare (values void))
 	   (glfwDestroyWindow ,(g `_window))
-	   (glfwTerminate)
-	   ))))
-  
-
+	   (glfwTerminate)))))
   (define-module
       `(draw ((_fontTex :direction 'out :type GLuint))
 	     (do0
@@ -320,16 +314,8 @@
 	      (defun cleanupDraw ()
 		(glDeleteTextures 1 (ref ,(g `_fontTex))))
 	      (defun drawFrame ()
-		
 		(glClear (logior GL_COLOR_BUFFER_BIT
-				 GL_DEPTH_BUFFER_BIT)
-			 
-				 )
-		
-		))))
-  
-
-  
+				 GL_DEPTH_BUFFER_BIT))))))
   (define-module
       `(gui ()
 	    (do0
@@ -371,12 +357,36 @@
 	       ))))
 
   (define-module
-      `(optix ((dev_id :type "const int")
+      `(optix (
+	       ;; createContext
+	       (dev_id :type "const int")
 	       (stream :type CUstream)
 	       (dev_prop :type cudaDeviceProp)
 	       (cuctx :type CUcontext)
-	       (oxctx :type OptixDeviceContext))
+	       (oxctx :type OptixDeviceContext)
+	       ;; createModule
+	       (module_compile_options :type OptixModuleCompileOptions)
+	       (pipeline_compile_options :type OptixPipelineCompileOptions)
+	       (pipeline_link_options :type OptixPipelineLinkOptions)
+
+	       ;;
+	       (pipeline :type OptixPipeline)
+	       (module :type OptixModule)
+	       ;;
+
+	       ,@(loop for e in `(ray miss hit)
+		    collect
+		      `(,(format nil "~a_programs" e) :type "std::vector<OptixProgramGroup>"))
+	       (hitgroup_records_buffer :type CUDABuffer)
+	       (shader_bindings_table :type OptixShaderBindingsTable)
+	       ;;
+	       (launch_params :type LaunchParams)
+	       (launch_params_buffer :type CUDABuffer)
+	       ;;
+	       (color_buffer :type CUDABuffer)
+	       )
 	      (do0
+	       "// derived from Ingo Wald's optix7course example03_inGLFWindow SampleRenderer.cpp"
 	       (include <cuda_runtime.h>
 			<optix.h>
 			<optix_stubs.h>
@@ -413,8 +423,9 @@
 		  `(optixDeviceContextSetLogCallback
 		    ,(g `oxctx)
 		   log
-		    nullptr 4)))
-	       )
+		   nullptr 4))))
+	     (defun createModule ()
+	       (setf module_compile))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -425,6 +436,7 @@
 		 ,(logprint (string "FAIL: no cuda device")))
 	       ,(ox `(optixInit))
 	       (createContext)
+	       (createModule)
 	       )
 	     (defun cleanupOptix ()
 	       )
@@ -505,9 +517,13 @@
 
 
 		    (include <cuda_runtime.h>
-		      <optix.h>
-		      <optix_stubs.h>
-		      )
+			     <optix.h>
+			     <optix_stubs.h>)
+
+		    (defstruct0 LaunchParams
+			(frameID int)
+		      (colorBuffer uint32_t*)
+		      (fbSize vec2i))
 		    
 		    (do0
 		     "template <typename T, int MaxLen>"
