@@ -17,11 +17,13 @@ PROTOS:=$(patsubst %, proto_%, $(HFILES))
 %.o: %.cpp globals.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
+# FindCUDA.cmake
 %.ptx: %.cu
 	/opt/cuda/bin/nvcc -c --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggdb  --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.3.0 -I/home/martin/optix/include --ptx -o $@ $< 
 
 # configure_optix.cmake
-# FindCUDA.cmake
+ptx_code.c: vis_05_cuda_device_programs.ptx
+	bin2c -c --padd 0 --type char --name ptx_code $< > $@
 
 all: vis
 vis: $(OBJ) #$(CUOBJ)
