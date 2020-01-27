@@ -411,7 +411,9 @@
 	       (include <cuda_runtime.h>
 			<optix.h>
 			<optix_stubs.h>
-			<optix_function_table_definition.h>)
+			<optix_function_table_definition.h>
+			<cstring>)
+	       "extern \"C\" const  char ptx_code[];"
 	     (defun createContext ()
 	       (declare (type "static void"))
 	       ,(cu `(cudaSetDevice ,(g `dev_id)))
@@ -424,7 +426,7 @@
 	       ,(ox
 		 `(optixDeviceContextCreate
 		   ,(g `cuctx) 0 (ref ,(g `oxctx))))
-	       (let ((log (lambda (level
+	       (let ((log_cb (lambda (level
 			    tag
 			    msg
 			    data)
@@ -442,7 +444,7 @@
 		,(ox
 		  `(optixDeviceContextSetLogCallback
 		    ,(g `oxctx)
-		   log
+		   log_cb
 		   nullptr 4))))
 	     (defun createModule ()
 	       ,(set-members-clear`(,(g `module_compile_options)
@@ -462,8 +464,9 @@
 				           
 				     :overrideUsesMotionBlur  false
 				     :maxTraceDepth           2))
+
 	       
-	       (let ((ptx (string ""))
+	       (let ((ptx ptx_code)
 		     (log[2048])
 		     (size_log (sizeof log)))
 		 (declare (type char log[2048])
@@ -472,7 +475,9 @@
 			,(g `oxctx)
 			(ref ,(g `module_compile_options))
 			(ref ,(g `pipeline_compile_options))
+					;ptx_code
 			(ptx.c_str)
+			;(strlen ptx_code)
 			(ptx.size)
 			log
 			&size_log

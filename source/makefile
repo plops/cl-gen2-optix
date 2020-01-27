@@ -14,7 +14,10 @@ OBJ:=$(CFILES:%.cpp=%.o)
 CUOBJ:=$(CUFILES:%.cu=%.o)
 HFILES:=$(CFILES:%.cpp=%.h)
 PROTOS:=$(patsubst %, proto_%, $(HFILES))
-%.o: %.cpp globals.h
+
+all: vis
+
+%.o: %.cpp globals.h 
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 # FindCUDA.cmake
@@ -25,8 +28,10 @@ PROTOS:=$(patsubst %, proto_%, $(HFILES))
 ptx_code.c: vis_05_cuda_device_programs.ptx
 	bin2c -c --padd 0 --type char --name ptx_code $< > $@
 
-all: vis
-vis: $(OBJ) #$(CUOBJ)
+ptx_code.o: ptx_code.c
+	$(CXX) $(CXXFLAGS) -c -o $@ $^ -fPIC #--no-pic --no-pie
+
+vis: $(OBJ) ptx_code.o
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 
@@ -35,5 +40,5 @@ genclean:
 	rm *.cpp *.o globals.h utils.h proto2.h vis *.s imgui/*.o 
 
 clean:
-	rm *.o vis *.s imgui/*.o 
+	rm *.o vis *.s imgui/*.o  *.ptx ptx_code.c
 

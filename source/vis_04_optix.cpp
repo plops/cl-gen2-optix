@@ -8,10 +8,12 @@
 extern State state;
 // derived from Ingo Wald's optix7course example03_inGLFWindow
 // SampleRenderer.cpp
+#include <cstring>
 #include <cuda_runtime.h>
 #include <optix.h>
 #include <optix_function_table_definition.h>
 #include <optix_stubs.h>
+extern "C" const char ptx_code[];
 void createContext() {
   {
     auto res = cudaSetDevice(state.dev_id);
@@ -84,8 +86,8 @@ void createContext() {
                   << (std::endl) << (std::flush);
     };
   };
-  auto log = [](unsigned int level, const char *tag, const char *msg,
-                void *data) {
+  auto log_cb = [](unsigned int level, const char *tag, const char *msg,
+                   void *data) {
     (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
@@ -99,7 +101,7 @@ void createContext() {
   };
   {
     OptixResult res =
-        optixDeviceContextSetLogCallback(state.oxctx, log, nullptr, 4);
+        optixDeviceContextSetLogCallback(state.oxctx, log_cb, nullptr, 4);
     if (!((OPTIX_SUCCESS) == (res))) {
 
       (std::cout)
@@ -109,8 +111,8 @@ void createContext() {
                   .count())
           << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
           << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-          << ("FAIL: optix optixDeviceContextSetLogCallback(state.oxctx, log, "
-              "nullptr, 4)")
+          << ("FAIL: optix optixDeviceContextSetLogCallback(state.oxctx, "
+              "log_cb, nullptr, 4)")
           << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
           << (std::flush);
     };
@@ -133,7 +135,7 @@ void createModule() {
   state.pipeline_link_options = {};
   state.pipeline_link_options.overrideUsesMotionBlur = false;
   state.pipeline_link_options.maxTraceDepth = 2;
-  const std::string ptx = "";
+  const std::string ptx = ptx_code;
   char log[2048];
   auto size_log = sizeof(log);
   {
