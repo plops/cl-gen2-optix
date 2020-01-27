@@ -15,10 +15,8 @@ CUOBJ:=$(CUFILES:%.cu=%.o)
 HFILES:=$(CFILES:%.cpp=%.h)
 PROTOS:=$(patsubst %, proto_%, $(HFILES))
 
-all: vis
+all:  ptx_code.c vis
 
-%.o: %.cpp globals.h 
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 # FindCUDA.cmake
 %.ptx: %.cu
@@ -26,12 +24,16 @@ all: vis
 
 # configure_optix.cmake
 ptx_code.c: vis_05_cuda_device_programs.ptx
-	bin2c -c --padd 0 --type char --name ptx_code $< > $@
+	bin2c -c --padd 0 --type "char" --name ptx_code $< > $@
 
-ptx_code.o: ptx_code.c
-	$(CXX) $(CXXFLAGS) -c -o $@ $^ -fPIC #--no-pic --no-pie
+#ptx_code.o: ptx_code.c
+#	$(CXX) $(CXXFLAGS) -c -o $@ $^ -fPIC #--no-pic --no-pie
 
-vis: $(OBJ) ptx_code.o
+%.o: %.cpp globals.h 
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+
+vis: $(OBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 

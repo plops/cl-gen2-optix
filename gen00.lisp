@@ -412,8 +412,11 @@
 			<optix.h>
 			<optix_stubs.h>
 			<optix_function_table_definition.h>
-			<cstring>)
-	       "extern \"C\" const  char ptx_code[];"
+			;<cstring>
+			)
+	       " "
+	       (include "ptx_code.c")
+	       ;"extern \"C\" const  char ptx_code[];"
 	     (defun createContext ()
 	       (declare (type "static void"))
 	       ,(cu `(cudaSetDevice ,(g `dev_id)))

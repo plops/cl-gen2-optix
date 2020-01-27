@@ -8,12 +8,12 @@
 extern State state;
 // derived from Ingo Wald's optix7course example03_inGLFWindow
 // SampleRenderer.cpp
-#include <cstring>
 #include <cuda_runtime.h>
 #include <optix.h>
 #include <optix_function_table_definition.h>
 #include <optix_stubs.h>
-extern "C" const char ptx_code[];
+
+#include "ptx_code.c"
 void createContext() {
   {
     auto res = cudaSetDevice(state.dev_id);
