@@ -18,6 +18,8 @@
 struct LaunchParams {
   int frameID;
   uint32_t *colorBuffer;
+  int fbSize_x;
+  int fbSize_y;
 };
 typedef struct LaunchParams LaunchParams;
 class CUDABuffer {

@@ -376,6 +376,7 @@
 		("ImGui::GetDrawData"))
 	       ))))
 
+  
   (define-module
       `(optix (
 	       ;; createContext
@@ -494,6 +495,45 @@
 	       )
 	     )))
 
+  (define-module
+      `(cuda_device_programs
+	()
+	(do0
+	 (include <optix_device.h>)
+	 " "
+
+	 #+nil (include "LaunchParams.h")
+	 #+nil
+	 (defstruct0 LaunchParams
+			(frameID int)
+		      (colorBuffer uint32_t*)
+		      (fbSize_x int)
+		      (fbSize_y int)
+		      ;(fbSize vec2i)
+		      )
+
+	 
+	 (let ((optixLaunchParams))
+	   (declare (type "__constant__ LaunchParams" optixLaunchParams)))
+	 (defun __closesthit_radiance ()
+	   (declare (values "__global__ void")))
+	 (defun __anythit_radiance ()
+	   (declare (values "__global__ void")))
+	 (defun __miss_radiance ()
+	   (declare (values "__global__ void")))
+	 (defun __raygen__renderFrame ()
+	   (declare (values "__global__ void"))
+	   (let ((frameID optixLaunchParams.frameID)
+		 (ix (dot (optixGetLaunchIndex) x))
+		 (iy (dot (optixGetLaunchIndex) y))
+		 (fbIndex (+ ix
+			     (* iy optixLaunchParams.fbSize_x))))
+	     (declare (type "const int" frameID)))
+	   (setf (aref optixLaunchParams.colorBuffer fbIndex)
+		 (hex #xff123456)))
+	 
+	 )))
+
   
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
@@ -577,6 +617,8 @@
 		    (defstruct0 LaunchParams
 			(frameID int)
 		      (colorBuffer uint32_t*)
+		      (fbSize_x int)
+		      (fbSize_y int)
 		      ;(fbSize vec2i)
 		      )
 
