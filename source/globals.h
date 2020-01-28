@@ -143,10 +143,11 @@ struct State {
   LaunchParams launch_params;
   OptixShaderBindingTable shader_bindings_table;
   CUDABuffer hitgroup_records_buffer;
-  CUDABuffer raygen_records_buffer;
-  std::vector<OptixProgramGroup> hit_programs;
+  std::vector<OptixProgramGroup> hitgroup_programs;
+  CUDABuffer miss_records_buffer;
   std::vector<OptixProgramGroup> miss_programs;
-  std::vector<OptixProgramGroup> ray_programs;
+  CUDABuffer raygen_records_buffer;
+  std::vector<OptixProgramGroup> raygen_programs;
   OptixModule module;
   OptixPipeline pipeline;
   OptixPipelineLinkOptions pipeline_link_options;

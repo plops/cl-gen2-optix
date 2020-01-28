@@ -174,7 +174,7 @@ void createModule() {
   };
 }
 void createRayGenPrograms() {
-  state.ray_programs.resize(1);
+  state.raygen_programs.resize(1);
   OptixProgramGroupOptions pg_options;
   OptixProgramGroupDesc pg_desc;
   pg_options = {};
@@ -188,7 +188,7 @@ void createRayGenPrograms() {
   {
     OptixResult res =
         optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, &(pg_options), log,
-                                &size_log, &(state.ray_programs[0]));
+                                &size_log, &(state.raygen_programs[0]));
     if (!((OPTIX_SUCCESS) == (res))) {
 
       (std::cout)
@@ -199,7 +199,7 @@ void createRayGenPrograms() {
           << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
           << (":") << (__LINE__) << (" ") << (__func__) << (" ")
           << ("FAIL: optix optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, "
-              "&(pg_options), log, &size_log, &(state.ray_programs[0]))")
+              "&(pg_options), log, &size_log, &(state.raygen_programs[0]))")
           << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
           << (std::flush);
     };
@@ -262,7 +262,7 @@ void createMissPrograms() {
   };
 }
 void createHitGroupPrograms() {
-  state.hit_programs.resize(1);
+  state.hitgroup_programs.resize(1);
   OptixProgramGroupOptions pg_options;
   OptixProgramGroupDesc pg_desc;
   pg_options = {};
@@ -278,7 +278,7 @@ void createHitGroupPrograms() {
   {
     OptixResult res =
         optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, &(pg_options), log,
-                                &size_log, &(state.hit_programs[0]));
+                                &size_log, &(state.hitgroup_programs[0]));
     if (!((OPTIX_SUCCESS) == (res))) {
 
       (std::cout)
@@ -289,7 +289,7 @@ void createHitGroupPrograms() {
           << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
           << (":") << (__LINE__) << (" ") << (__func__) << (" ")
           << ("FAIL: optix optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, "
-              "&(pg_options), log, &size_log, &(state.hit_programs[0]))")
+              "&(pg_options), log, &size_log, &(state.hitgroup_programs[0]))")
           << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
           << (std::flush);
     };
@@ -309,13 +309,13 @@ void createHitGroupPrograms() {
 }
 void createPipeline() {
   std::vector<OptixProgramGroup> program_groups;
-  for (auto &p : state.ray_programs) {
+  for (auto &p : state.raygen_programs) {
     program_groups.push_back(p);
   };
   for (auto &p : state.miss_programs) {
     program_groups.push_back(p);
   };
-  for (auto &p : state.hit_programs) {
+  for (auto &p : state.hitgroup_programs) {
     program_groups.push_back(p);
   };
   char log[2048];
@@ -375,19 +375,34 @@ void createPipeline() {
     };
   };
 }
-struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord {
+struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) raygen_record_t {
   __align__(
       OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
   void *data;
 };
-typedef struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord
-    __align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord;
+typedef struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) raygen_record_t
+    __align__(OPTIX_SBT_RECORD_ALIGNMENT) raygen_record_t;
+struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) miss_record_t {
+  __align__(
+      OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+  void *data;
+};
+typedef struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) miss_record_t
+    __align__(OPTIX_SBT_RECORD_ALIGNMENT) miss_record_t;
+struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) hitgroup_record_t {
+  __align__(
+      OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+  void *data;
+};
+typedef struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) hitgroup_record_t
+    __align__(OPTIX_SBT_RECORD_ALIGNMENT) hitgroup_record_t;
 void buildSBT() {
-  std::vector<RaygenRecord> raygen_records;
-  for (int i = 0; i < state.ray_programs.size(); (i) += (1)) {
-    RaygenRecord rec;
+  std::vector<raygen_record_t> raygen_records;
+  for (int i = 0; i < state.raygen_programs.size(); (i) += (1)) {
+    raygen_record_t rec;
     {
-      OptixResult res = optixSbtRecordPackHeader(state.ray_programs[i], &(rec));
+      OptixResult res =
+          optixSbtRecordPackHeader(state.raygen_programs[i], &(rec));
       if (!((OPTIX_SUCCESS) == (res))) {
 
         (std::cout)
@@ -397,8 +412,8 @@ void buildSBT() {
                     .count())
             << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
             << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-            << ("FAIL: optix optixSbtRecordPackHeader(state.ray_programs[i], "
-                "&(rec))")
+            << ("FAIL: optix "
+                "optixSbtRecordPackHeader(state.raygen_programs[i], &(rec))")
             << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
             << (std::flush);
       };
@@ -408,6 +423,58 @@ void buildSBT() {
   state.raygen_records_buffer.alloc_and_upload(raygen_records);
   state.shader_bindings_table.raygenRecord =
       state.raygen_records_buffer.d_pointer();
+  std::vector<miss_record_t> miss_records;
+  for (int i = 0; i < state.miss_programs.size(); (i) += (1)) {
+    miss_record_t rec;
+    {
+      OptixResult res =
+          optixSbtRecordPackHeader(state.miss_programs[i], &(rec));
+      if (!((OPTIX_SUCCESS) == (res))) {
+
+        (std::cout)
+            << (std::setw(10))
+            << (std::chrono::high_resolution_clock::now()
+                    .time_since_epoch()
+                    .count())
+            << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+            << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+            << ("FAIL: optix optixSbtRecordPackHeader(state.miss_programs[i], "
+                "&(rec))")
+            << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
+            << (std::flush);
+      };
+    };
+    miss_records.push_back(rec);
+  }
+  state.miss_records_buffer.alloc_and_upload(miss_records);
+  state.shader_bindings_table.missRecord =
+      state.miss_records_buffer.d_pointer();
+  std::vector<hitgroup_record_t> hitgroup_records;
+  for (int i = 0; i < state.hitgroup_programs.size(); (i) += (1)) {
+    hitgroup_record_t rec;
+    {
+      OptixResult res =
+          optixSbtRecordPackHeader(state.hitgroup_programs[i], &(rec));
+      if (!((OPTIX_SUCCESS) == (res))) {
+
+        (std::cout)
+            << (std::setw(10))
+            << (std::chrono::high_resolution_clock::now()
+                    .time_since_epoch()
+                    .count())
+            << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+            << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+            << ("FAIL: optix "
+                "optixSbtRecordPackHeader(state.hitgroup_programs[i], &(rec))")
+            << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
+            << (std::flush);
+      };
+    };
+    hitgroup_records.push_back(rec);
+  }
+  state.hitgroup_records_buffer.alloc_and_upload(hitgroup_records);
+  state.shader_bindings_table.hitgroupRecord =
+      state.hitgroup_records_buffer.d_pointer();
 }
 void initOptix() {
 

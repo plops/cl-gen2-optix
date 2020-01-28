@@ -9,17 +9,14 @@
 				     :serial-debug
 				     :queue-debug
 				     :lock-debug
-				     :adq
-				     :finisar
+				     
 				     )))
 (setf *features* (set-difference *features*
 				 '(:nolog
 				   :debug-thread-activity
 				   :serial-debug
 				   :queue-debug
-				   :lock-debug
-				   :adq
-				   :finisar
+				   
 				   )))
 
 
@@ -395,11 +392,13 @@
 	       (module :type OptixModule)
 	       ;;
 
-	       ,@(loop for e in `(ray miss hit)
-		    collect
-		      `(,(format nil "~a_programs" e) :type "std::vector<OptixProgramGroup>"))
-	       (raygen_records_buffer :type CUDABuffer)
-	       (hitgroup_records_buffer :type CUDABuffer)
+	       ,@(loop for e in `(raygen miss hitgroup)
+		    appending
+		      `((,(format nil "~a_programs" e) :type "std::vector<OptixProgramGroup>")
+			(,(format nil "~a_records_buffer" e) :type CUDABuffer))
+		      )
+	       
+	       ;(hitgroup_records_buffer :type CUDABuffer)
 	       (shader_bindings_table :type OptixShaderBindingTable)
 	       ;;
 	       (launch_params :type LaunchParams)
@@ -488,9 +487,9 @@
 		 (when (< 1 size_log)
 		   ,(logprint "" `(size_log log)))))
 	     ,@(loop for line in
-		    `((ray RayGen "__raygen__renderFrame")
+		    `((raygen RayGen "__raygen__renderFrame")
 		      (miss Miss "__miss__radiance")
-		      (hit HitGroup)) collect
+		      (hitgroup HitGroup)) collect
 		    (destructuring-bind  (e f &optional entry) line
 		      (let ((var (g (format nil "~a_programs" e))))
 		       `(defun ,(format nil "create~aPrograms" f) ()
@@ -503,7 +502,7 @@
 			    ,(set-members-clear `(pg_desc
 						  :kind ,(string-upcase (format nil "OPTIX_PROGRAM_GROUP_KIND_~a" f))
 						  
-						  ,@(if (member e `(ray miss))
+						  ,@(if (member e `(raygen miss))
 							`(,(intern (string-upcase (format nil "~a.module" (string-downcase f)))) ,(g `module)
 							   ,(intern (format nil "~a.entryFunctionName"
 									   (string-downcase f)))
@@ -533,7 +532,7 @@
 	     (defun createPipeline ()
 	       (let ((program_groups))
 		 (declare (type "std::vector<OptixProgramGroup>" program_groups))
-		 ,@(loop for e in `(ray miss hit) collect
+		 ,@(loop for e in `(raygen miss hitgroup) collect
 			`(foreach (p ,(g (format nil "~a_programs" e)))
 				  (program_groups.push_back p)))
 		 (let ((log[2048])
@@ -557,27 +556,33 @@
 			(* 2 1024) ;; continuation
 			1 ;; maximum depth of traversable graph passed to trace
 			))))
-	     (defstruct0 "__align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord"
-		 ((aref header OPTIX_SBT_RECORD_HEADER_SIZE)
-		  "__align__(OPTIX_SBT_RECORD_ALIGNMENT) char")
-	       (data "void*")
-	       )
+	     ,@(loop for e in `(raygen miss hitgroup) collect
+		    `(defstruct0
+			 ,(format nil "__align__(OPTIX_SBT_RECORD_ALIGNMENT) ~a_record_t" e)
+			 ((aref header OPTIX_SBT_RECORD_HEADER_SIZE)
+			  "__align__(OPTIX_SBT_RECORD_ALIGNMENT) char")
+		       (data "void*")
+		 ))
 	     (defun buildSBT ()
-	       (let ((raygen_records))
-		 (declare (type "std::vector<RaygenRecord>" raygen_records))
-		 (dotimes (i (dot ,(g `ray_programs)
-				  (size)))
-		   (let ((rec))
-		     (declare (type "RaygenRecord" rec))
-		     ,(ox `(optixSbtRecordPackHeader (aref ,(g `ray_programs) i)
-						     (ref rec)))
-		     (raygen_records.push_back rec)))
-		 (dot ,(g `raygen_records_buffer)
-		      (alloc_and_upload raygen_records))
-		 (setf (dot ,(g `shader_bindings_table)
-			    raygenRecord)
-		       (dot ,(g `raygen_records_buffer)
-			    (d_pointer))))
+	       ,@(loop for e in `(raygen miss hitgroup) collect
+		      (let ((records (format nil "~a_records" e))
+			    (progs (g (format nil "~a_programs" e)))
+			    (buffer (g (format nil "~a_records_buffer" e)))
+			    (type (format nil "~a_record_t" e)))
+			`(let ((,records))
+			   (declare (type ,(format nil "std::vector<~a>" type)  ,records))
+			 (dotimes (i (dot ,progs (size)))
+			   (let ((rec))
+			     (declare (type ,type rec))
+			     ,(ox `(optixSbtRecordPackHeader (aref ,progs i)
+							     (ref rec)))
+			     (dot ,records (push_back rec))))
+			 (dot ,buffer
+			      (alloc_and_upload ,records))
+			 (setf (dot ,(g `shader_bindings_table)
+				    ,(format nil "~aRecord" e))
+			       (dot ,buffer
+				    (d_pointer))))))
 	       )
 	     
 	     (defun initOptix ()
