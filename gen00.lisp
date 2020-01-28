@@ -411,13 +411,11 @@
 	       (include <cuda_runtime.h>
 			<optix.h>
 			<optix_stubs.h>
-			<optix_function_table_definition.h>
-			;<cstring>
-			)
+			<optix_function_table_definition.h>)
 	       " "
-	       ; (include "ptx_code.c")
+					
 	       "extern \"C\" const  char ptx_code[];"
-	       ;"extern const  char ptx_code[];"
+
 	     (defun createContext ()
 	       (declare (type "static void"))
 	       ,(cu `(cudaSetDevice ,(g `dev_id)))
@@ -523,15 +521,15 @@
 
 	 
 	 (let ((optixLaunchParams))
-	   (declare (type "__constant__ LaunchParams" optixLaunchParams)))
+	   (declare (type "extern \"C\" __constant__ LaunchParams" optixLaunchParams)))
 	 (defun __closesthit_radiance ()
-	   (declare (values "__global__ void")))
+	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __anythit_radiance ()
-	   (declare (values "__global__ void")))
+	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __miss_radiance ()
-	   (declare (values "__global__ void")))
+	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __raygen__renderFrame ()
-	   (declare (values "__global__ void"))
+	   (declare (values "extern \"C\" __global__ void"))
 	   (let ((frameID optixLaunchParams.frameID)
 		 (ix (dot (optixGetLaunchIndex) x))
 		 (iy (dot (optixGetLaunchIndex) y))

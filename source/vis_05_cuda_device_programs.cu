@@ -8,11 +8,11 @@
 extern State state;
 #include <optix_device.h>
 
-__constant__ LaunchParams optixLaunchParams;
-__global__ void __closesthit_radiance() {}
-__global__ void __anythit_radiance() {}
-__global__ void __miss_radiance() {}
-__global__ void __raygen__renderFrame() {
+extern "C" __constant__ LaunchParams optixLaunchParams;
+extern "C" __global__ void __closesthit_radiance() {}
+extern "C" __global__ void __anythit_radiance() {}
+extern "C" __global__ void __miss_radiance() {}
+extern "C" __global__ void __raygen__renderFrame() {
   const int frameID = optixLaunchParams.frameID;
   auto ix = optixGetLaunchIndex().x;
   auto iy = optixGetLaunchIndex().y;
