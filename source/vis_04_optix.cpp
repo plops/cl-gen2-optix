@@ -374,18 +374,40 @@ void createPipeline() {
                   << (std::endl) << (std::flush);
     };
   };
-  if (1 < size_log) {
+}
+struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord {
+  __align__(
+      OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+  void *data;
+};
+typedef struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord
+    __align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord;
+void buildSBT() {
+  std::vector<RaygenRecord> raygen_records;
+  for (int i = 0; i < state.ray_programs.size(); (i) += (1)) {
+    RaygenRecord rec;
+    {
+      OptixResult res = optixSbtRecordPackHeader(state.ray_programs[i], &(rec));
+      if (!((OPTIX_SUCCESS) == (res))) {
 
-    (std::cout) << (std::setw(10))
-                << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
-                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                << (":") << (__LINE__) << (" ") << (__func__) << (" ") << ("")
-                << (" ") << (std::setw(8)) << (" size_log=") << (size_log)
-                << (std::setw(8)) << (" log=") << (log) << (std::endl)
-                << (std::flush);
-  };
+        (std::cout)
+            << (std::setw(10))
+            << (std::chrono::high_resolution_clock::now()
+                    .time_since_epoch()
+                    .count())
+            << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+            << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+            << ("FAIL: optix optixSbtRecordPackHeader(state.ray_programs[i], "
+                "&(rec))")
+            << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
+            << (std::flush);
+      };
+    };
+    raygen_records.push_back(rec);
+  }
+  state.raygen_records_buffer.alloc_and_upload(raygen_records);
+  state.shader_bindings_table.raygenRecord =
+      state.raygen_records_buffer.d_pointer();
 }
 void initOptix() {
 
@@ -430,5 +452,6 @@ void initOptix() {
   createMissPrograms();
   createHitGroupPrograms();
   createPipeline();
+  buildSBT();
 }
 void cleanupOptix(){};

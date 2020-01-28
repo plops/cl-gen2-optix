@@ -19,5 +19,6 @@ void createRayGenPrograms ();
 void createMissPrograms ();
 void createHitGroupPrograms ();
 void createPipeline ();
+void buildSBT ();
 void initOptix ();
 void cleanupOptix ();

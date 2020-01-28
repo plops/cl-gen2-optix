@@ -398,6 +398,7 @@
 	       ,@(loop for e in `(ray miss hit)
 		    collect
 		      `(,(format nil "~a_programs" e) :type "std::vector<OptixProgramGroup>"))
+	       (raygen_records_buffer :type CUDABuffer)
 	       (hitgroup_records_buffer :type CUDABuffer)
 	       (shader_bindings_table :type OptixShaderBindingTable)
 	       ;;
@@ -555,9 +556,30 @@
  			(* 2 1024) ;; direct, invoked from RG MSor CH
 			(* 2 1024) ;; continuation
 			1 ;; maximum depth of traversable graph passed to trace
-			))
-		 (when (< 1 size_log)
-				,(logprint "" `(size_log log)))))
+			))))
+	     (defstruct0 "__align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord"
+		 ((aref header OPTIX_SBT_RECORD_HEADER_SIZE)
+		  "__align__(OPTIX_SBT_RECORD_ALIGNMENT) char")
+	       (data "void*")
+	       )
+	     (defun buildSBT ()
+	       (let ((raygen_records))
+		 (declare (type "std::vector<RaygenRecord>" raygen_records))
+		 (dotimes (i (dot ,(g `ray_programs)
+				  (size)))
+		   (let ((rec))
+		     (declare (type "RaygenRecord" rec))
+		     ,(ox `(optixSbtRecordPackHeader (aref ,(g `ray_programs) i)
+						     (ref rec)))
+		     (raygen_records.push_back rec)))
+		 (dot ,(g `raygen_records_buffer)
+		      (alloc_and_upload raygen_records))
+		 (setf (dot ,(g `shader_bindings_table)
+			    raygenRecord)
+		       (dot ,(g `raygen_records_buffer)
+			    (d_pointer))))
+	       )
+	     
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -573,6 +595,7 @@
 	       (createMissPrograms)
 	       (createHitGroupPrograms)
 	       (createPipeline)
+	       (buildSBT)
 	       )
 	     (defun cleanupOptix ()
 	       )
@@ -707,6 +730,7 @@
 
 		    (do0
 		     (defclass CUDABuffer ()
+		       "public:"
 		       (let ((_d_ptr)
 			     (_size_in_bytes))
 			 (declare (type void* _d_ptr)
@@ -743,7 +767,7 @@
 			 (assert (!= nullptr _d_ptr))
 			 (assert (== _size_in_bytes (* count (sizeof T))))
 			 ,(cu `(cudaMemcpy _d_ptr
-					  (static_cast<void*> dat)
+					   ("static_cast<const void*>" dat)
 					  (* count (sizeof T))
 					  cudaMemcpyHostToDevice)))
 		       (defun download (dat count)

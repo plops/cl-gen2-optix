@@ -23,6 +23,7 @@ struct LaunchParams {
 };
 typedef struct LaunchParams LaunchParams;
 class CUDABuffer {
+public:
   void *_d_ptr;
   size_t _size_in_bytes;
   CUdeviceptr d_pointer() { return reinterpret_cast<CUdeviceptr>(_d_ptr); }
@@ -80,7 +81,7 @@ class CUDABuffer {
     assert((nullptr) != (_d_ptr));
     assert((_size_in_bytes) == (((count) * (sizeof(T)))));
     {
-      auto res = cudaMemcpy(_d_ptr, static_cast<void *>(dat),
+      auto res = cudaMemcpy(_d_ptr, static_cast<const void *>(dat),
                             ((count) * (sizeof(T))), cudaMemcpyHostToDevice);
       if (!((CUDA_SUCCESS) == (res))) {
 
@@ -91,7 +92,7 @@ class CUDABuffer {
                     .count())
             << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
             << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-            << ("FAIL: cuda cudaMemcpy(_d_ptr, static_cast<void*>(dat), "
+            << ("FAIL: cuda cudaMemcpy(_d_ptr, static_cast<const void*>(dat), "
                 "((count)*(sizeof(T))), cudaMemcpyHostToDevice)")
             << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
             << (std::flush);
@@ -142,6 +143,7 @@ struct State {
   LaunchParams launch_params;
   OptixShaderBindingTable shader_bindings_table;
   CUDABuffer hitgroup_records_buffer;
+  CUDABuffer raygen_records_buffer;
   std::vector<OptixProgramGroup> hit_programs;
   std::vector<OptixProgramGroup> miss_programs;
   std::vector<OptixProgramGroup> ray_programs;
