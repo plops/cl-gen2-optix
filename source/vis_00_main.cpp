@@ -21,6 +21,18 @@ void mainLoop() {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("mainLoop") << (" ")
       << (std::endl) << (std::flush);
   while (!(glfwWindowShouldClose(state._window))) {
+    {
+      static bool first_run = true;
+      if (((first_run) || (state._framebufferResized))) {
+        int width = 0;
+        int height = 0;
+        glfwGetWindowSize(state._window, &width, &height);
+        resize(width, height);
+        state._pixels.resize(((width) * (height)));
+        state._framebufferResized = false;
+        first_run = false;
+      };
+    };
     glfwPollEvents();
     drawFrame();
     render();

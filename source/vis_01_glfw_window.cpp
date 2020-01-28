@@ -33,8 +33,6 @@ static void framebufferResizeCallback(GLFWwindow *window, int width,
       << (__LINE__) << (" ") << (__func__) << (" ") << ("resize") << (" ")
       << (std::setw(8)) << (" width=") << (width) << (std::setw(8))
       << (" height=") << (height) << (std::endl) << (std::flush);
-  resize(width, height);
-  state._pixels.resize(((width) * (height)));
   auto app = (State *)(glfwGetWindowUserPointer(window));
   app->_framebufferResized = true;
 }

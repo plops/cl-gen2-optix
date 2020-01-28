@@ -213,8 +213,22 @@
 	       (defun mainLoop ()
 		 ,(logprint "mainLoop" `())
 		 (while (not (glfwWindowShouldClose ,(g `_window)))
-		   #+nil (when ,(g `_framebufferResized)
-		     (setf ,(g `_framebufferResized) false))
+		   (progn
+		    (let ((first_run true))
+		      (declare (type "static bool" first_run))
+		      (when (or first_run ,(g `_framebufferResized))
+			(let ((width 0)
+			      (height 0))
+			  (declare (type int width height))
+			     
+			  (glfwGetWindowSize ,(g `_window)
+					     &width
+					     &height))
+			(do0 (resize width height)
+			     (dot ,(g `_pixels)
+				  (resize (* width height))))
+			(setf ,(g `_framebufferResized) false
+			      first_run false))))
 		   (glfwPollEvents)
 		   (drawFrame)
 		   (do0
@@ -337,9 +351,9 @@
 		    (type GLFWwindow* window)
 		    (type int width height))
 	   ,(logprint "resize" `(width height))
-	   (resize width height)
-	   (dot ,(g `_pixels)
-		(resize (* width height)))
+	   #+nil (do0 (resize width height)
+		(dot ,(g `_pixels)
+		     (resize (* width height))))
 	   (let ((app ("(State*)" (glfwGetWindowUserPointer window))))
 	     (setf app->_framebufferResized true)))
 	 (defun initWindow ()
