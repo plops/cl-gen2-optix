@@ -486,6 +486,31 @@
 			(ref ,(g `module))))
 		 (when (< 1 size_log)
 		   ,(logprint "" `(size_log log)))))
+	     (defun createRaygenPrograms ()
+	       (dot ,(g `ray_programs) (resize 1))
+	       (let ((pg_options)
+		     (pg_desc))
+		 (declare (type OptixProgramGroupOptions pg_options)
+			  (type OptixProgramGroupDesc pg_desc))
+		 ,(set-members-clear `(pg_options))
+		 ,(set-members-clear `(pg_desc
+				       :kind OPTIX_PROGRAM_GROUP_KIND_RAYGEN
+				       :raygen.module ,(g `module)
+				       :raygen.entryFunctionName (string "__raygen__renderFrame")))
+		 (let ((log[2048])
+		       (size_log (sizeof log)))
+		 (declare (type char log[2048])
+			 )
+		 ,(ox `(optixProgramGroupCreate
+			,(g `oxctx)
+			(ref pg_desc)
+			1
+			(ref pg_options)
+			log
+			&size_log
+			(ref (aref ,(g 'ray_programs) 0))))
+		 (when (< 1 size_log)
+		   ,(logprint "" `(size_log log))))))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -497,6 +522,7 @@
 	       ,(ox `(optixInit))
 	       (createContext)
 	       (createModule)
+	       (createRaygenPrograms)
 	       )
 	     (defun cleanupOptix ()
 	       )

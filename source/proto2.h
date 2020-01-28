@@ -15,5 +15,6 @@ void cleanupGui ();
 void drawGui ();
 void createContext ();
 void createModule ();
+void createRaygenPrograms ();
 void initOptix ();
 void cleanupOptix ();

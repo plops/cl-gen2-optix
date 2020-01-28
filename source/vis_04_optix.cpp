@@ -173,6 +173,50 @@ void createModule() {
                 << (std::flush);
   };
 }
+void createRaygenPrograms() {
+  state.ray_programs.resize(1);
+  OptixProgramGroupOptions pg_options;
+  OptixProgramGroupDesc pg_desc;
+  pg_options = {};
+  ;
+  pg_desc = {};
+  pg_desc.kind = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
+  pg_desc.raygen.module = state.module;
+  pg_desc.raygen.entryFunctionName = "__raygen__renderFrame";
+  char log[2048];
+  auto size_log = sizeof(log);
+  {
+    OptixResult res =
+        optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, &(pg_options), log,
+                                &size_log, &(state.ray_programs[0]));
+    if (!((OPTIX_SUCCESS) == (res))) {
+
+      (std::cout)
+          << (std::setw(10))
+          << (std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count())
+          << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+          << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+          << ("FAIL: optix optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, "
+              "&(pg_options), log, &size_log, &(state.ray_programs[0]))")
+          << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
+          << (std::flush);
+    };
+  };
+  if (1 < size_log) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ") << ("")
+                << (" ") << (std::setw(8)) << (" size_log=") << (size_log)
+                << (std::setw(8)) << (" log=") << (log) << (std::endl)
+                << (std::flush);
+  };
+}
 void initOptix() {
 
   (std::cout)
@@ -212,5 +256,6 @@ void initOptix() {
   };
   createContext();
   createModule();
+  createRaygenPrograms();
 }
 void cleanupOptix(){};
