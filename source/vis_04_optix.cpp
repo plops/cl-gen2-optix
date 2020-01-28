@@ -447,8 +447,11 @@ void buildSBT() {
     miss_records.push_back(rec);
   }
   state.miss_records_buffer.alloc_and_upload(miss_records);
-  state.shader_bindings_table.missRecord =
+  state.shader_bindings_table.missRecordBase =
       state.miss_records_buffer.d_pointer();
+  state.shader_bindings_table.missRecordStrideInBytes = sizeof(miss_record_t);
+  state.shader_bindings_table.missRecordCount =
+      static_cast<int>(miss_records.size());
   std::vector<hitgroup_record_t> hitgroup_records;
   for (int i = 0; i < state.hitgroup_programs.size(); (i) += (1)) {
     hitgroup_record_t rec;
@@ -473,8 +476,12 @@ void buildSBT() {
     hitgroup_records.push_back(rec);
   }
   state.hitgroup_records_buffer.alloc_and_upload(hitgroup_records);
-  state.shader_bindings_table.hitgroupRecord =
+  state.shader_bindings_table.hitgroupRecordBase =
       state.hitgroup_records_buffer.d_pointer();
+  state.shader_bindings_table.hitgroupRecordStrideInBytes =
+      sizeof(hitgroup_record_t);
+  state.shader_bindings_table.hitgroupRecordCount =
+      static_cast<int>(hitgroup_records.size());
 }
 void initOptix() {
 

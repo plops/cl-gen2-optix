@@ -579,10 +579,25 @@
 			     (dot ,records (push_back rec))))
 			 (dot ,buffer
 			      (alloc_and_upload ,records))
-			 (setf (dot ,(g `shader_bindings_table)
-				    ,(format nil "~aRecord" e))
-			       (dot ,buffer
-				    (d_pointer))))))
+			 ,(cond
+			    ((eq e 'raygen)
+			     `(setf (dot ,(g `shader_bindings_table)
+					,(format nil "~aRecord" e))
+				   (dot ,buffer
+					(d_pointer))))
+			    (t
+			     `(do0
+			       (setf (dot ,(g `shader_bindings_table)
+					  ,(format nil "~aRecordBase" e))
+				     (dot ,buffer
+					  (d_pointer)))
+			       (setf (dot ,(g `shader_bindings_table)
+					  ,(format nil "~aRecordStrideInBytes" e))
+				     (sizeof ,type))
+			       (setf (dot ,(g `shader_bindings_table)
+					  ,(format nil "~aRecordCount" e))
+				     (static_cast<int> (dot ,records
+							    (size))))))))))
 	       )
 	     
 	     (defun initOptix ()
