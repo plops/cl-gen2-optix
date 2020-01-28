@@ -13,7 +13,7 @@ extern State state;
 #include <optix_function_table_definition.h>
 #include <optix_stubs.h>
 
-#include "ptx_code.c"
+extern "C" const char ptx_code[];
 void createContext() {
   {
     auto res = cudaSetDevice(state.dev_id);

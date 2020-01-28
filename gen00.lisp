@@ -415,8 +415,9 @@
 			;<cstring>
 			)
 	       " "
-	       (include "ptx_code.c")
-	       ;"extern \"C\" const  char ptx_code[];"
+	       ; (include "ptx_code.c")
+	       "extern \"C\" const  char ptx_code[];"
+	       ;"extern const  char ptx_code[];"
 	     (defun createContext ()
 	       (declare (type "static void"))
 	       ,(cu `(cudaSetDevice ,(g `dev_id)))

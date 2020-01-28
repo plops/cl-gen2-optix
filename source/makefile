@@ -26,15 +26,15 @@ all:  ptx_code.c vis
 ptx_code.c: vis_05_cuda_device_programs.ptx
 	bin2c -c --padd 0 --type "char" --name ptx_code $< > $@
 
-#ptx_code.o: ptx_code.c
-#	$(CXX) $(CXXFLAGS) -c -o $@ $^ -fPIC #--no-pic --no-pie
+ptx_code.o: ptx_code.c
+	gcc $(CXXFLAGS) -c -o $@ $^ -fpic #--no-pic --no-pie
 
 %.o: %.cpp globals.h 
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 
-vis: $(OBJ)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+vis: $(OBJ) ptx_code.o
+	$(CXX) -rdynamic -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 
 
