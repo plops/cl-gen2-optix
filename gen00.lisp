@@ -486,31 +486,49 @@
 			(ref ,(g `module))))
 		 (when (< 1 size_log)
 		   ,(logprint "" `(size_log log)))))
-	     (defun createRaygenPrograms ()
-	       (dot ,(g `ray_programs) (resize 1))
-	       (let ((pg_options)
-		     (pg_desc))
-		 (declare (type OptixProgramGroupOptions pg_options)
-			  (type OptixProgramGroupDesc pg_desc))
-		 ,(set-members-clear `(pg_options))
-		 ,(set-members-clear `(pg_desc
-				       :kind OPTIX_PROGRAM_GROUP_KIND_RAYGEN
-				       :raygen.module ,(g `module)
-				       :raygen.entryFunctionName (string "__raygen__renderFrame")))
-		 (let ((log[2048])
-		       (size_log (sizeof log)))
-		 (declare (type char log[2048])
-			 )
-		 ,(ox `(optixProgramGroupCreate
-			,(g `oxctx)
-			(ref pg_desc)
-			1
-			(ref pg_options)
-			log
-			&size_log
-			(ref (aref ,(g 'ray_programs) 0))))
-		 (when (< 1 size_log)
-		   ,(logprint "" `(size_log log))))))
+	     ,@(loop for line in
+		    `((ray RayGen "__raygen__renderFrame")
+		      (miss Miss "__miss__radiance")
+		      (hit HitGroup)) collect
+		    (destructuring-bind  (e f &optional entry) line
+		      (let ((var (g (format nil "~a_programs" e))))
+		       `(defun ,(format nil "create~aPrograms" f) ()
+			  (dot ,var (resize 1))
+			  (let ((pg_options)
+				(pg_desc))
+			    (declare (type OptixProgramGroupOptions pg_options)
+				     (type OptixProgramGroupDesc pg_desc))
+			    ,(set-members-clear `(pg_options))
+			    ,(set-members-clear `(pg_desc
+						  :kind ,(string-upcase (format nil "OPTIX_PROGRAM_GROUP_KIND_~a" f))
+						  
+						  ,@(if (member e `(ray miss))
+							`(,(intern (string-upcase (format nil "~a.module" (string-downcase f)))) ,(g `module)
+							   ,(intern (format nil "~a.entryFunctionName"
+									   (string-downcase f)))
+							   (string ,entry))
+							`(,(intern (format nil "~a.moduleCH" (string-downcase f))) ,(g `module)
+							   ,(intern (format nil "~a.moduleAH" (string-downcase f))) ,(g `module)
+							   ,(intern (format nil "~a.entryFunctionNameCH"
+									   (string-downcase f)))
+							   (string "__closesthit__radiance")
+							   ,(intern (format nil "~a.entryFunctionNameAH"
+									    (string-downcase f)))
+							   (string "__anyhit__radiance")))))
+			    (let ((log[2048])
+				  (size_log (sizeof log)))
+			      (declare (type char log[2048])
+				       )
+			      ,(ox `(optixProgramGroupCreate
+				     ,(g `oxctx)
+				     (ref pg_desc)
+				     1
+				     (ref pg_options)
+				     log
+				     &size_log
+				     (ref (aref ,var 0))))
+			      (when (< 1 size_log)
+				,(logprint "" `(size_log log)))))))))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -522,7 +540,9 @@
 	       ,(ox `(optixInit))
 	       (createContext)
 	       (createModule)
-	       (createRaygenPrograms)
+	       (createRayGenPrograms)
+	       (createMissPrograms)
+	       (createHitGroupPrograms)
 	       )
 	     (defun cleanupOptix ()
 	       )
@@ -548,11 +568,11 @@
 	 
 	 (let ((optixLaunchParams))
 	   (declare (type "extern \"C\" __constant__ LaunchParams" optixLaunchParams)))
-	 (defun __closesthit_radiance ()
+	 (defun __closesthit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
-	 (defun __anythit_radiance ()
+	 (defun __anyhit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
-	 (defun __miss_radiance ()
+	 (defun __miss__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __raygen__renderFrame ()
 	   (declare (values "extern \"C\" __global__ void"))
