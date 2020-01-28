@@ -18,5 +18,6 @@ void createModule ();
 void createRayGenPrograms ();
 void createMissPrograms ();
 void createHitGroupPrograms ();
+void createPipeline ();
 void initOptix ();
 void cleanupOptix ();

@@ -529,6 +529,35 @@
 				     (ref (aref ,var 0))))
 			      (when (< 1 size_log)
 				,(logprint "" `(size_log log)))))))))
+	     (defun createPipeline ()
+	       (let ((program_groups))
+		 (declare (type "std::vector<OptixProgramGroup>" program_groups))
+		 ,@(loop for e in `(ray miss hit) collect
+			`(foreach (p ,(g (format nil "~a_programs" e)))
+				  (program_groups.push_back p)))
+		 (let ((log[2048])
+		       (size_log (sizeof log)))
+		   (declare (type char log[2048]))
+			      ,(ox `(optixPipelineCreate
+				     ,(g `oxctx)
+				     (ref ,(g `pipeline_compile_options))
+				     (ref ,(g `pipeline_link_options))
+				     (program_groups.data)
+				     (static_cast<int> (program_groups.size))
+				     log
+				     &size_log
+				     (ref ,(g `pipeline))))
+			      (when (< 1 size_log)
+				,(logprint "" `(size_log log))))
+		 ,(ox `(optixPipelineSetStackSize
+			,(g `pipeline)
+			(* 2 1024) ;; direct, invoked from ISor AH
+ 			(* 2 1024) ;; direct, invoked from RG MSor CH
+			(* 2 1024) ;; continuation
+			1 ;; maximum depth of traversable graph passed to trace
+			))
+		 (when (< 1 size_log)
+				,(logprint "" `(size_log log)))))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -543,6 +572,7 @@
 	       (createRayGenPrograms)
 	       (createMissPrograms)
 	       (createHitGroupPrograms)
+	       (createPipeline)
 	       )
 	     (defun cleanupOptix ()
 	       )

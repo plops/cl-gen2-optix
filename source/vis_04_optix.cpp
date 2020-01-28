@@ -307,6 +307,86 @@ void createHitGroupPrograms() {
                 << (std::flush);
   };
 }
+void createPipeline() {
+  std::vector<OptixProgramGroup> program_groups;
+  for (auto &p : state.ray_programs) {
+    program_groups.push_back(p);
+  };
+  for (auto &p : state.miss_programs) {
+    program_groups.push_back(p);
+  };
+  for (auto &p : state.hit_programs) {
+    program_groups.push_back(p);
+  };
+  char log[2048];
+  auto size_log = sizeof(log);
+  {
+    OptixResult res = optixPipelineCreate(
+        state.oxctx, &(state.pipeline_compile_options),
+        &(state.pipeline_link_options), program_groups.data(),
+        static_cast<int>(program_groups.size()), log, &size_log,
+        &(state.pipeline));
+    if (!((OPTIX_SUCCESS) == (res))) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ")
+                  << ("FAIL: optix optixPipelineCreate(state.oxctx, "
+                      "&(state.pipeline_compile_options), "
+                      "&(state.pipeline_link_options), program_groups.data(), "
+                      "static_cast<int>(program_groups.size()), log, "
+                      "&size_log, &(state.pipeline))")
+                  << (" ") << (std::setw(8)) << (" res=") << (res)
+                  << (std::endl) << (std::flush);
+    };
+  };
+  if (1 < size_log) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ") << ("")
+                << (" ") << (std::setw(8)) << (" size_log=") << (size_log)
+                << (std::setw(8)) << (" log=") << (log) << (std::endl)
+                << (std::flush);
+  };
+  {
+    OptixResult res = optixPipelineSetStackSize(
+        state.pipeline, ((2) * (1024)), ((2) * (1024)), ((2) * (1024)), 1);
+    if (!((OPTIX_SUCCESS) == (res))) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ")
+                  << ("FAIL: optix optixPipelineSetStackSize(state.pipeline, "
+                      "((2)*(1024)), ((2)*(1024)), ((2)*(1024)), 1)")
+                  << (" ") << (std::setw(8)) << (" res=") << (res)
+                  << (std::endl) << (std::flush);
+    };
+  };
+  if (1 < size_log) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ") << ("")
+                << (" ") << (std::setw(8)) << (" size_log=") << (size_log)
+                << (std::setw(8)) << (" log=") << (log) << (std::endl)
+                << (std::flush);
+  };
+}
 void initOptix() {
 
   (std::cout)
@@ -349,5 +429,6 @@ void initOptix() {
   createRayGenPrograms();
   createMissPrograms();
   createHitGroupPrograms();
+  createPipeline();
 }
 void cleanupOptix(){};
