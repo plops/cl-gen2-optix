@@ -483,6 +483,75 @@ void buildSBT() {
   state.shader_bindings_table.hitgroupRecordCount =
       static_cast<int>(hitgroup_records.size());
 }
+void render() {
+  if ((0) == (state.launch_params.fbSize_x)) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("can't launch because first resize hasn't happened")
+                << (" ") << (std::endl) << (std::flush);
+    return;
+  };
+  state.launch_params_buffer.upload(&(state.launch_params), 1);
+  (state.launch_params.frameID)++;
+  {
+    OptixResult res = optixLaunch(
+        state.pipeline, state.stream, state.launch_params_buffer.d_pointer(),
+        state.launch_params_buffer._size_in_bytes,
+        &(state.shader_bindings_table), state.launch_params.fbSize_x,
+        state.launch_params.fbSize_y, 1);
+    if (!((OPTIX_SUCCESS) == (res))) {
+
+      (std::cout)
+          << (std::setw(10))
+          << (std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count())
+          << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+          << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+          << ("FAIL: optix optixLaunch(state.pipeline, state.stream, "
+              "state.launch_params_buffer.d_pointer(), "
+              "state.launch_params_buffer._size_in_bytes, "
+              "&(state.shader_bindings_table), state.launch_params.fbSize_x, "
+              "state.launch_params.fbSize_y, 1)")
+          << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
+          << (std::flush);
+    };
+  };
+  {
+    cudaDeviceSynchronize();
+    {
+      auto res = cudaGetLastError();
+      if (!((CUDA_SUCCESS) == (res))) {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
+                    << (std::setw(8)) << (" res=") << (res) << (std::endl)
+                    << (std::flush);
+      };
+    };
+  };
+}
+void resize(int x, int y) {
+  state.color_buffer.resize(((x) * (y) * (sizeof(uint32_t))));
+  state.launch_params.fbSize_x = x;
+  state.launch_params.fbSize_y = y;
+  state.launch_params.colorBuffer =
+      static_cast<uint32_t *>(state.color_buffer._d_ptr);
+}
+void download_pixels(uint32_t *h_pixels) {
+  state.color_buffer.download(h_pixels, ((state.launch_params.fbSize_x) *
+                                         (state.launch_params.fbSize_y)));
+}
 void initOptix() {
 
   (std::cout)
@@ -527,5 +596,6 @@ void initOptix() {
   createHitGroupPrograms();
   createPipeline();
   buildSBT();
+  state.launch_params_buffer.alloc(sizeof(LaunchParams));
 }
 void cleanupOptix(){};

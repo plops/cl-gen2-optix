@@ -20,5 +20,8 @@ void createMissPrograms ();
 void createHitGroupPrograms ();
 void createPipeline ();
 void buildSBT ();
+void render ();
+void resize (int x, int y);
+void download_pixels (uint32_t* h_pixels);
 void initOptix ();
 void cleanupOptix ();
