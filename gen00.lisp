@@ -193,6 +193,7 @@
   
   (define-module
       `(main ((_filename :direction 'out :type "char const *")
+	      (_pixels :type "std::vector<uint32_t>")
 	      )
 	     (do0
 	      (include <iostream>
@@ -212,8 +213,67 @@
 	       (defun mainLoop ()
 		 ,(logprint "mainLoop" `())
 		 (while (not (glfwWindowShouldClose ,(g `_window)))
+		   #+nil (when ,(g `_framebufferResized)
+		     (setf ,(g `_framebufferResized) false))
 		   (glfwPollEvents)
 		   (drawFrame)
+		   (do0
+		    (render)
+		    (download_pixels (dot ,(g `_pixels)
+					  (data)))
+		    (let ((fb_texture 0))
+		      (declare (type "static GLuint" fb_texture))
+		      (when (== 0 fb_texture)
+			(glGenTextures 1 &fb_texture))
+		      (glBindTexture GL_TEXTURE_2D fb_texture)
+		      (glTexImage2D GL_TEXTURE_2D
+				    0
+				    GL_RGBA
+				    ,(g `launch_params.fbSize_x)
+				    ,(g `launch_params.fbSize_y)
+				    0
+				    GL_RGBA
+				    GL_UNSIGNED_BYTE
+				    (dot ,(g `_pixels)
+					 (data)))
+		      (glDisable GL_LIGHTING)
+		      (glColor3f 1 1 1)
+		      (glMatrixMode GL_MODELVIEW)
+		      (glLoadIdentity)
+		      (glEnable GL_TEXTURE_2D)
+		      (glBindTexture GL_TEXTURE_2D fb_texture)
+		      (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+		      (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
+		      (glDisable GL_DEPTH_TEST)
+		      (glViewport 0 0
+				  ,(g `launch_params.fbSize_x)
+				    ,(g `launch_params.fbSize_y)
+				    )
+		      (glMatrixMode GL_PROJECTION)
+		      (glLoadIdentity)
+		      (glOrtho 0s0
+			       (static_cast<float> ,(g `launch_params.fbSize_x))
+			       0s0
+			       (static_cast<float> ,(g `launch_params.fbSize_y))
+			       -1s0
+			       1s0)
+		      (do0
+		       (glBegin GL_QUADS)
+		       ,@(loop for (e f) in `((0 0)
+					      (0 (static_cast<float> ,(g `launch_params.fbSize_y)))
+					      ((static_cast<float> ,(g `launch_params.fbSize_x))
+					       (static_cast<float> ,(g `launch_params.fbSize_y)))
+					      ((static_cast<float> ,(g `launch_params.fbSize_x))
+					       0))
+			    appending
+			      `((glTexCoord2f ,(if (eq e 0)
+						   0s0
+						   1s0)
+					      ,(if (eq f 0)
+						   0s0
+						   1s0))
+				(glVertex3f ,e ,f 0s0)))
+		       (glEnd))))
 		   (drawGui)
 		   (glfwSwapBuffers ,(g `_window))
 		   )
@@ -277,6 +337,9 @@
 		    (type GLFWwindow* window)
 		    (type int width height))
 	   ,(logprint "resize" `(width height))
+	   (resize width height)
+	   (dot ,(g `_pixels)
+		(resize (* width height)))
 	   (let ((app ("(State*)" (glfwGetWindowUserPointer window))))
 	     (setf app->_framebufferResized true)))
 	 (defun initWindow ()

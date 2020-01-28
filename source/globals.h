@@ -161,6 +161,7 @@ struct State {
   GLuint _fontTex;
   bool _framebufferResized;
   GLFWwindow *_window;
+  std::vector<uint32_t> _pixels;
   char const *_filename;
 };
 typedef struct State State;
