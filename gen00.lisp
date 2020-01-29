@@ -925,6 +925,27 @@
 	   (declare (type "extern \"C\" __constant__ LaunchParams" optixLaunchParams)))
 
 	 "enum { SURFACE_RAY_TYPE=0, RAY_TYPE_COUNT };"
+
+	 (defun unpack_pointer (i0 i1)
+	   (declare (type uint32_t i0 i1)
+		    (values "static __forceinline__ __device__ void*"))
+	   (let ((uptr (logior (<< (static_cast<uint64_t> i0)
+				   32)
+			       i1)))
+	     ;(declare (type "const uint64_t" uptr))
+	     (return (reinterpret_cast<void*> uptr))))
+
+	 (defun pack_pointer (ptr i0 i1)
+	   (declare (type "uint32_t&" i0 i1)
+		    (type void* ptr)
+		    (values "static __forceinline__ __device__ void"))
+	   
+	   (let ((uptr (reinterpret_cast<uint64_t> ptr))
+		 )
+	     (setf i0 (>> uptr 32)
+		   i1 (& uptr (hex #xffffffff)))))
+
+	 
 	 
 	 (defun __closesthit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
