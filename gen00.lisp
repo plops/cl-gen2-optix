@@ -903,6 +903,34 @@
 			,@(loop for e in `(from at up) collect
 			       `(,e "glm::vec3")))
 
+		    
+		    (do0
+		     (defclass linear_space_t ()
+		       "public:"
+		       (let ((vx)
+			     (vy)
+			     (vz))
+			 (declare (type "glm::vec3" vx vy vz))))
+		     (defclass affine_space_t ()
+		       "public:"
+		       (let ((l)
+			     (p))
+			 (declare (type "glm::vec3" p)
+				  (type linear_space_t l)))))
+
+		    (defun xfm_point (m p)
+			 (declare (type "const glm::vec3&" p)
+				  (type "const affine_space_t&" m)
+				  (values "inline glm::vec3"))
+			 (return ("glm::fma"
+				  ("glm::vec3" (aref p 0))
+				  m.l.vx
+				  ("glm::fma"
+				   ("glm::vec3" (aref p 1))
+				   m.l.vy
+				   ("glm::fma" ("glm::vec3" (aref p 2))
+					       m.l.vz
+					       m.p)))))
 		    (do0
 		     (defclass triangle_mesh_t ()
 		       "public:"
@@ -911,7 +939,7 @@
 			 (declare (type "std::vector<glm::vec3>" _vertex)
 				  (type "std::vector<glm::ivec3>" _index)))
 		       (defun add_unit_cube (m)
-			 (declare (type "const glm::mat3x3&" m))
+			 (declare (type "const affine_space_t&" m))
 			 (let ((first_vertex_id (static_cast<int>
 						 (_vertex.size))))
 			   ,@(loop for (x y z) in `((0 0 0)
@@ -924,7 +952,7 @@
 						    (1 1 1))
 				collect
 				  `(_vertex.push_back
-				    (* m ("glm::vec3" ,(* 1s0 x)
+				    (xfm_point m ("glm::vec3" ,(* 1s0 x)
 						      ,(* 1s0 y)
 						      ,(* 1s0 z))))))
 			 (let ((indices[] (curly 0 1 3  2 3 0
@@ -942,12 +970,36 @@
 				  (aref indices (+ 2 (* 3 i))))
 				 first_vertex_id)))))
 		       (defun add_cube (center size)
-			 (declare  (type "glm::vec3&"
+			 (declare  (type "const glm::vec3&"
 					 center
 					 size))
-			 (let ((m))
-			   (declare (type "glm::mat3x3" m))
-			   ()))))
+			 (let ((m
+				(curly
+				 (curly
+				  ,@(loop for (e f) in '((x (1 0 0))
+							 (y (0 1 0))
+							 (z (0 0 1)))
+				       collect
+					 `("glm::vec3" ,@(loop for g in f collect
+							      (if (eq g 0)
+								  0
+								  (format nil "size.~a" e))))))
+				 (- center (* .5s0 size)))))
+			   (declare (type "const affine_space_t" m))
+			   #+nil
+			   (do0
+			    (setf m.p (- center (* .5s0 size))
+				  )
+			    ,@(loop for (e f) in '((x (1 0 0))
+						   (y (0 1 0))
+						   (z (0 0 1)))
+				 collect
+				   `(setf ,(format nil "m.l.v~a" e)
+					  ("glm::vec3" ,@(loop for g in f collect
+							      (if (eq g 0)
+								  0
+								  (format nil "size.~a" e)))))))
+			   (add_unit_cube m)))))
 		    
 		    (do0
 		     (defclass CUDABuffer ()
