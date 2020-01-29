@@ -9,6 +9,7 @@
 #include <condition_variable>
 #include <cuda_runtime.h>
 #include <deque>
+#include <glm/vec3.hpp>
 #include <mutex>
 #include <optix.h>
 #include <optix_stubs.h>
@@ -20,21 +21,19 @@ struct LaunchParams {
   uint32_t *colorBuffer;
   int fbSize_x;
   int fbSize_y;
-  float camera_position_x;
-  float camera_position_y;
-  float camera_position_z;
-  float camera_direction_x;
-  float camera_direction_y;
-  float camera_direction_z;
-  float camera_horizontal_x;
-  float camera_horizontal_y;
-  float camera_horizontal_z;
-  float camera_vertical_x;
-  float camera_vertical_y;
-  float camera_vertical_z;
+  glm::vec3 camera_position;
+  glm::vec3 camera_direction;
+  glm::vec3 camera_horizontal;
+  glm::vec3 camera_vertical;
   OptixTraversableHandle traversable;
 };
 typedef struct LaunchParams LaunchParams;
+struct camera_t {
+  glm::vec3 from;
+  glm::vec3 at;
+  glm::vec3 up;
+};
+typedef struct camera_t camera_t;
 class CUDABuffer {
 public:
   void *_d_ptr;

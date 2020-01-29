@@ -13,6 +13,7 @@ extern State state;
 #include <optix_function_table_definition.h>
 #include <optix_stubs.h>
 
+#include <glm/geometric.hpp>
 extern "C" const char ptx_code[];
 void createContext() {
   {
@@ -392,7 +393,7 @@ typedef struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) miss_record_t
 struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) hitgroup_record_t {
   __align__(
       OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
-  void *data;
+  int object_id;
 };
 typedef struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) hitgroup_record_t
     __align__(OPTIX_SBT_RECORD_ALIGNMENT) hitgroup_record_t;
@@ -551,6 +552,24 @@ void resize(int x, int y) {
 void download_pixels(uint32_t *h_pixels) {
   state.color_buffer.download(h_pixels, ((state.launch_params.fbSize_x) *
                                          (state.launch_params.fbSize_y)));
+}
+void set_camera(const camera_t &camera) {
+  static camera_t last_set_camera;
+  last_set_camera = camera;
+  auto cos_fov_y = (6.6e-1f);
+  auto aspect = ((static_cast<float>(state.launch_params.fbSize_x)) /
+                 (state.launch_params.fbSize_y));
+  state.launch_params.camera_position = camera.from;
+  state.launch_params.camera_direction =
+      glm::normalize(((camera.at) - (camera.from)));
+  state.launch_params.camera_horizontal =
+      ((cos_fov_y) * (aspect) *
+       (glm::normalize(
+           glm::cross(state.launch_params.camera_direction, camera.up))));
+  state.launch_params.camera_vertical =
+      ((cos_fov_y) *
+       (glm::normalize(glm::cross(state.launch_params.camera_horizontal,
+                                  state.launch_params.camera_direction))));
 }
 void initOptix() {
 

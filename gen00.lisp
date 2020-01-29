@@ -490,6 +490,7 @@
 			<optix_stubs.h>
 			<optix_function_table_definition.h>)
 	       " "
+	       (include <glm/geometric.hpp> )
 					
 	       "extern \"C\" const  char ptx_code[];"
 
@@ -638,7 +639,9 @@
 			 ,(format nil "__align__(OPTIX_SBT_RECORD_ALIGNMENT) ~a_record_t" e)
 			 ((aref header OPTIX_SBT_RECORD_HEADER_SIZE)
 			  "__align__(OPTIX_SBT_RECORD_ALIGNMENT) char")
-		       (data "void*")
+		       ,(case e
+			  ('hitgroup `(object_id int))
+			  (t `(data "void*")))
 		 ))
 	     (defun buildSBT ()
 	       ,@(loop for e in `(raygen miss hitgroup) collect
@@ -714,7 +717,30 @@
 			      (* ,(g `launch_params.fbSize_x)
 				 ,(g `launch_params.fbSize_y)
 				 ))))
-	     
+	     (defun set_camera (camera)
+	       (declare (type "const camera_t&" camera))
+	       (let ((last_set_camera))
+		 (declare (type "static camera_t" last_set_camera))
+		 (setf last_set_camera camera)
+		 (let ((cos_fov_y .66s0)
+		       (aspect (/ (static_cast<float> ,(g `launch_params.fbSize_x))
+				  ,(g `launch_params.fbSize_y))))
+		   ,@(loop for (e f) in
+			  `((position camera.from)
+			    (direction ("glm::normalize" (- camera.at camera.from)))
+			    (horizontal (* cos_fov_y
+					   aspect
+					   ("glm::normalize"
+					    ("glm::cross"
+					     ,(g `launch_params.camera_direction)
+					     camera.up))))
+			    (vertical (* cos_fov_y
+					 ("glm::normalize"
+					    ("glm::cross"
+					     ,(g `launch_params.camera_horizontal)
+					     ,(g `launch_params.camera_direction))))))
+			collect
+			  `(setf (dot ,(g `launch_params) ,(format nil "camera_~a" e)) ,f)))))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -855,6 +881,8 @@
 			     <optix.h>
 			     <optix_stubs.h>)
 
+		    (include <glm/vec3.hpp>)
+		    
 		    (include <cassert>)
 
 		    (defstruct0 LaunchParams
@@ -862,11 +890,14 @@
 		      (colorBuffer uint32_t*)
 		      (fbSize_x int)
 		      (fbSize_y int)
-		      ,@(loop for e in `(position direction horizontal vertical) appending
-			     (loop for f in `(x y z) collect
-				  `(,(format nil "camera_~a_~a" e f) float)))
+		      ,@(loop for e in `(position direction horizontal vertical) collect
+			     `(,(format nil "camera_~a" e)  "glm::vec3"))
 		      (traversable OptixTraversableHandle)
 		      )
+
+		    (defstruct0 camera_t
+			,@(loop for e in `(from at up) collect
+			       `(,e "glm::vec3")))
 
 		    (do0
 		     (defclass CUDABuffer ()
