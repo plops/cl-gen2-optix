@@ -9,6 +9,7 @@
 #include <condition_variable>
 #include <cuda_runtime.h>
 #include <deque>
+#include <glm/mat3x3.hpp>
 #include <glm/vec3.hpp>
 #include <mutex>
 #include <optix.h>
@@ -34,6 +35,31 @@ struct camera_t {
   glm::vec3 up;
 };
 typedef struct camera_t camera_t;
+class triangle_mesh_t {
+public:
+  std::vector<glm::vec3> _vertex;
+  std::vector<glm::ivec3> _index;
+  void add_unit_cube(const glm::mat3x3 &m) {
+    auto first_vertex_id = static_cast<int>(_vertex.size());
+    _vertex.push_back(((m) * (glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f)))));
+    _vertex.push_back(((m) * (glm::vec3((1.e+0f), (0.0e+0f), (0.0e+0f)))));
+    _vertex.push_back(((m) * (glm::vec3((0.0e+0f), (1.e+0f), (0.0e+0f)))));
+    _vertex.push_back(((m) * (glm::vec3((1.e+0f), (1.e+0f), (0.0e+0f)))));
+    _vertex.push_back(((m) * (glm::vec3((0.0e+0f), (0.0e+0f), (1.e+0f)))));
+    _vertex.push_back(((m) * (glm::vec3((1.e+0f), (0.0e+0f), (1.e+0f)))));
+    _vertex.push_back(((m) * (glm::vec3((0.0e+0f), (1.e+0f), (1.e+0f)))));
+    _vertex.push_back(((m) * (glm::vec3((1.e+0f), (1.e+0f), (1.e+0f)))));
+    int indices[] = {0, 1, 3, 2, 3, 0, 5, 7, 6, 5, 6, 4, 0, 4, 5, 0, 5, 1,
+                     2, 3, 7, 2, 7, 6, 1, 5, 7, 1, 7, 3, 4, 0, 2, 4, 2, 6};
+    for (int i = 0; i < 12; (i) += (1)) {
+      _index.push_back(((glm::ivec3(indices[((0) + (((3) * (i))))],
+                                    indices[((1) + (((3) * (i))))],
+                                    indices[((2) + (((3) * (i))))])) +
+                        (first_vertex_id)));
+    };
+  }
+  void add_cube(glm::vec3 &center, glm::vec3 &size) {}
+};
 class CUDABuffer {
 public:
   void *_d_ptr;
@@ -150,6 +176,7 @@ public:
 struct State {
   typeof(std::chrono::high_resolution_clock::now().time_since_epoch().count())
       _start_time;
+  camera_t last_set_camera;
   CUDABuffer color_buffer;
   CUDABuffer launch_params_buffer;
   LaunchParams launch_params;

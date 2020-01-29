@@ -482,6 +482,8 @@
 	       (launch_params_buffer :type CUDABuffer)
 	       ;;
 	       (color_buffer :type CUDABuffer)
+	       ;;
+	       (last_set_camera :type camera_t)
 	       )
 	      (do0
 	       "// derived from Ingo Wald's optix7course example03_inGLFWindow SampleRenderer.cpp"
@@ -709,7 +711,9 @@
 		     ,(g `launch_params.fbSize_y) y
 		     ,(g `launch_params.colorBuffer)
 		     (static_cast<uint32_t*> (dot ,(g `color_buffer)
-						  _d_ptr))))
+						  _d_ptr)))
+	       ;; reset camera in case aspect has changed
+	       (set_camera ,(g `last_set_camera)))
 	     (defun download_pixels (h_pixels)
 	       (declare (type "uint32_t*" h_pixels))
 	       (dot ,(g `color_buffer)
@@ -719,28 +723,27 @@
 				 ))))
 	     (defun set_camera (camera)
 	       (declare (type "const camera_t&" camera))
-	       (let ((last_set_camera))
-		 (declare (type "static camera_t" last_set_camera))
-		 (setf last_set_camera camera)
-		 (let ((cos_fov_y .66s0)
-		       (aspect (/ (static_cast<float> ,(g `launch_params.fbSize_x))
-				  ,(g `launch_params.fbSize_y))))
-		   ,@(loop for (e f) in
-			  `((position camera.from)
-			    (direction ("glm::normalize" (- camera.at camera.from)))
-			    (horizontal (* cos_fov_y
-					   aspect
-					   ("glm::normalize"
-					    ("glm::cross"
-					     ,(g `launch_params.camera_direction)
-					     camera.up))))
-			    (vertical (* cos_fov_y
+	       
+	       (setf ,(g `last_set_camera) camera)
+	       (let ((cos_fov_y .66s0)
+		     (aspect (/ (static_cast<float> ,(g `launch_params.fbSize_x))
+				,(g `launch_params.fbSize_y))))
+		 ,@(loop for (e f) in
+			`((position camera.from)
+			  (direction ("glm::normalize" (- camera.at camera.from)))
+			  (horizontal (* cos_fov_y
+					 aspect
 					 ("glm::normalize"
-					    ("glm::cross"
-					     ,(g `launch_params.camera_horizontal)
-					     ,(g `launch_params.camera_direction))))))
-			collect
-			  `(setf (dot ,(g `launch_params) ,(format nil "camera_~a" e)) ,f)))))
+					  ("glm::cross"
+					   ,(g `launch_params.camera_direction)
+					   camera.up))))
+			  (vertical (* cos_fov_y
+				       ("glm::normalize"
+					("glm::cross"
+					 ,(g `launch_params.camera_horizontal)
+					 ,(g `launch_params.camera_direction))))))
+		      collect
+			`(setf (dot ,(g `launch_params) ,(format nil "camera_~a" e)) ,f))))
 	     (defun initOptix ()
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
@@ -881,7 +884,8 @@
 			     <optix.h>
 			     <optix_stubs.h>)
 
-		    (include <glm/vec3.hpp>)
+		    (include <glm/vec3.hpp>
+			      <glm/mat3x3.hpp>)
 		    
 		    (include <cassert>)
 
@@ -899,6 +903,52 @@
 			,@(loop for e in `(from at up) collect
 			       `(,e "glm::vec3")))
 
+		    (do0
+		     (defclass triangle_mesh_t ()
+		       "public:"
+		       (let ((_vertex)
+			     (_index))
+			 (declare (type "std::vector<glm::vec3>" _vertex)
+				  (type "std::vector<glm::ivec3>" _index)))
+		       (defun add_unit_cube (m)
+			 (declare (type "const glm::mat3x3&" m))
+			 (let ((first_vertex_id (static_cast<int>
+						 (_vertex.size))))
+			   ,@(loop for (x y z) in `((0 0 0)
+						    (1 0 0)
+						    (0 1 0)
+						    (1 1 0)
+						    (0 0 1)
+						    (1 0 1)
+						    (0 1 1)
+						    (1 1 1))
+				collect
+				  `(_vertex.push_back
+				    (* m ("glm::vec3" ,(* 1s0 x)
+						      ,(* 1s0 y)
+						      ,(* 1s0 z))))))
+			 (let ((indices[] (curly 0 1 3  2 3 0
+						 5 7 6  5 6 4
+						 0 4 5  0 5 1
+						 2 3 7  2 7 6
+						 1 5 7  1 7 3
+						 4 0 2  4 2 6)))
+			   (declare (type int indices[]))
+			   (dotimes (i 12)
+			     (_index.push_back
+			      (+ ("glm::ivec3"
+				  (aref indices (+ 0 (* 3 i)))
+				  (aref indices (+ 1 (* 3 i)))
+				  (aref indices (+ 2 (* 3 i))))
+				 first_vertex_id)))))
+		       (defun add_cube (center size)
+			 (declare  (type "glm::vec3&"
+					 center
+					 size))
+			 (let ((m))
+			   (declare (type "glm::mat3x3" m))
+			   ()))))
+		    
 		    (do0
 		     (defclass CUDABuffer ()
 		       "public:"

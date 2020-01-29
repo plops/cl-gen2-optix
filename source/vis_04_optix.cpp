@@ -548,14 +548,14 @@ void resize(int x, int y) {
   state.launch_params.fbSize_y = y;
   state.launch_params.colorBuffer =
       static_cast<uint32_t *>(state.color_buffer._d_ptr);
+  set_camera(state.last_set_camera);
 }
 void download_pixels(uint32_t *h_pixels) {
   state.color_buffer.download(h_pixels, ((state.launch_params.fbSize_x) *
                                          (state.launch_params.fbSize_y)));
 }
 void set_camera(const camera_t &camera) {
-  static camera_t last_set_camera;
-  last_set_camera = camera;
+  state.last_set_camera = camera;
   auto cos_fov_y = (6.6e-1f);
   auto aspect = ((static_cast<float>(state.launch_params.fbSize_x)) /
                  (state.launch_params.fbSize_y));
