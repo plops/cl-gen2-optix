@@ -977,19 +977,26 @@
 			 (declare (type "glm::vec3" p)
 				  (type linear_space_t l)))))
 
+		    (defun fma (a b c)
+		      (declare (type "const glm::vec3&" a b c)
+			       (values "inline glm::vec3"))
+		      (return (+ (* a b) c)))
 		    (defun xfm_point (m p)
 			 (declare (type "const glm::vec3&" p)
 				  (type "const affine_space_t&" m)
 				  (values "inline glm::vec3"))
-			 (return ("glm::fma"
-				  ("glm::vec3" (aref p 0))
-				  m.l.vx
-				  ("glm::fma"
-				   ("glm::vec3" (aref p 1))
-				   m.l.vy
-				   ("glm::fma" ("glm::vec3" (aref p 2))
-					       m.l.vz
-					       m.p)))))
+			 (let ((c (fma ("glm::vec3" (aref p 2))
+						m.l.vz
+						m.p))
+			       (b (fma
+				    ("glm::vec3" (aref p 1))
+				    m.l.vy
+				    c))
+			       (a (fma
+				   ("glm::vec3" (aref p 0))
+				   m.l.vx
+				   b)))
+			  (return a)))
 		    (do0
 		     (defclass triangle_mesh_t ()
 		       "public:"

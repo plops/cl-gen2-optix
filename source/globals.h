@@ -46,10 +46,15 @@ public:
   linear_space_t l;
   glm::vec3 p;
 };
+inline glm::vec3 fma(const glm::vec3 &a, const glm::vec3 &b,
+                     const glm::vec3 &c) {
+  return ((((a) * (b))) + (c));
+}
 inline glm::vec3 xfm_point(const affine_space_t &m, const glm::vec3 &p) {
-  return glm::fma(glm::vec3(p[0]), m.l.vx,
-                  glm::fma(glm::vec3(p[1]), m.l.vy,
-                           glm::fma(glm::vec3(p[2]), m.l.vz, m.p)));
+  auto c = fma(glm::vec3(p[2]), m.l.vz, m.p);
+  auto b = fma(glm::vec3(p[1]), m.l.vy, c);
+  auto a = fma(glm::vec3(p[0]), m.l.vx, b);
+  return a;
 }
 class triangle_mesh_t {
 public:
