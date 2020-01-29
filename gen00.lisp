@@ -923,6 +923,9 @@
 	 
 	 (let ((optixLaunchParams))
 	   (declare (type "extern \"C\" __constant__ LaunchParams" optixLaunchParams)))
+
+	 "enum { SURFACE_RAY_TYPE=0, RAY_TYPE_COUNT };"
+	 
 	 (defun __closesthit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __anyhit__radiance ()

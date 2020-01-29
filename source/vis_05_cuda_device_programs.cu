@@ -9,6 +9,7 @@ extern State state;
 #include <optix_device.h>
 
 extern "C" __constant__ LaunchParams optixLaunchParams;
+enum { SURFACE_RAY_TYPE = 0, RAY_TYPE_COUNT };
 extern "C" __global__ void __closesthit__radiance() {}
 extern "C" __global__ void __anyhit__radiance() {}
 extern "C" __global__ void __miss__radiance() {}
