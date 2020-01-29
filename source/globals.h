@@ -20,6 +20,19 @@ struct LaunchParams {
   uint32_t *colorBuffer;
   int fbSize_x;
   int fbSize_y;
+  float camera_position_x;
+  float camera_position_y;
+  float camera_position_z;
+  float camera_direction_x;
+  float camera_direction_y;
+  float camera_direction_z;
+  float camera_horizontal_x;
+  float camera_horizontal_y;
+  float camera_horizontal_z;
+  float camera_vertical_x;
+  float camera_vertical_y;
+  float camera_vertical_z;
+  OptixTraversableHandle traversable;
 };
 typedef struct LaunchParams LaunchParams;
 class CUDABuffer {

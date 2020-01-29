@@ -862,7 +862,10 @@
 		      (colorBuffer uint32_t*)
 		      (fbSize_x int)
 		      (fbSize_y int)
-		      ;(fbSize vec2i)
+		      ,@(loop for e in `(position direction horizontal vertical) appending
+			     (loop for f in `(x y z) collect
+				  `(,(format nil "camera_~a_~a" e f) float)))
+		      (traversable OptixTraversableHandle)
 		      )
 
 		    (do0
