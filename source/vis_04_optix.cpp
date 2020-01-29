@@ -571,7 +571,32 @@ void set_camera(const camera_t &camera) {
        (glm::normalize(glm::cross(state.launch_params.camera_horizontal,
                                   state.launch_params.camera_direction))));
 }
-void initOptix() {
+OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
+  state.vertex_buffer.alloc_and_upload(model._vertex);
+  state.index_buffer.alloc_and_upload(model._index);
+  OptixTraversableHandle handle = {0};
+  OptixBuildInput triangle_input = {};
+  auto d_vertices = state.vertex_buffer.d_pointer();
+  auto d_indices = state.index_buffer.d_pointer();
+  uint32_t triangle_input_flags[] = {0};
+  triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
+  triangle_input.triangleArray.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
+  triangle_input.triangleArray.vertexStrideInBytes = sizeof(glm::vec3);
+  triangle_input.triangleArray.numVertices =
+      static_cast<int>(model._vertex.size());
+  triangle_input.triangleArray.vertexBuffers = &d_vertices;
+  triangle_input.triangleArray.indexFormat = OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
+  triangle_input.triangleArray.indexStrideInBytes = sizeof(glm::ivec3);
+  triangle_input.triangleArray.numIndexTriplets =
+      static_cast<int>(model._index.size());
+  triangle_input.triangleArray.indexBuffer = d_indices;
+  triangle_input.triangleArray.flags = triangle_input_flags;
+  triangle_input.triangleArray.numSbtRecords = 1;
+  triangle_input.triangleArray.sbtIndexOffsetBuffer = 0;
+  triangle_input.triangleArray.sbtIndexOffsetSizeInBytes = 0;
+  triangle_input.triangleArray.sbtIndexOffsetStrideInBytes = 0;
+}
+void initOptix(const triangle_mesh_t &model) {
 
   (std::cout)
       << (std::setw(10))
@@ -613,6 +638,7 @@ void initOptix() {
   createRayGenPrograms();
   createMissPrograms();
   createHitGroupPrograms();
+  state.launch_params.traversable = buildAccel(model);
   createPipeline();
   buildSBT();
   state.launch_params_buffer.alloc(sizeof(LaunchParams));

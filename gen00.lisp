@@ -212,23 +212,39 @@
 	      (do0
 	       (defun mainLoop ()
 		 ,(logprint "mainLoop" `())
+
+		 (let ((first_run true)
+		       (model)
+		       (camera (curly ("glm::vec3" -10s0 2s0 -12s0)
+				      ("glm::vec3" 0s0 0s0 0s0)
+				      ("glm::vec3" 0s0 1s0 0s0))))
+		   (declare (type "static triangle_mesh_t" model)
+			    (type "static camera_t" camera)
+			    (type "static bool" first_run))
+
+		   
+		   (when first_run
+		     (do0 (model.add_cube ("glm::vec3" 0s0 -1.5s0 0s0)
+					("glm::vec3" 10s0 .1s0 10s0))
+			(model.add_cube ("glm::vec3" 0s0 0s0 0s0)
+					("glm::vec3" 2s0 2s0 2s0)))
+		    (initOptix model)))
+		 
 		 (while (not (glfwWindowShouldClose ,(g `_window)))
 		   (progn
-		    (let ((first_run true))
-		      (declare (type "static bool" first_run))
-		      (when (or first_run ,(g `_framebufferResized))
-			(let ((width 0)
-			      (height 0))
-			  (declare (type int width height))
-			     
-			  (glfwGetWindowSize ,(g `_window)
-					     &width
-					     &height))
-			(do0 (resize width height)
-			     (dot ,(g `_pixels)
-				  (resize (* width height))))
-			(setf ,(g `_framebufferResized) false
-			      first_run false))))
+		    (when (or first_run ,(g `_framebufferResized))
+		      (let ((width 0)
+			    (height 0))
+			(declare (type int width height))
+			
+			(glfwGetWindowSize ,(g `_window)
+					   &width
+					   &height))
+		      (do0 (resize width height)
+			   (dot ,(g `_pixels)
+				(resize (* width height))))
+		      (setf ,(g `_framebufferResized) false
+			    first_run false)))
 		   (glfwPollEvents)
 		   (drawFrame)
 		   (do0
@@ -299,7 +315,7 @@
 		 (initGui)
 		 
 		 (initDraw)
-		 (initOptix)
+		 
 		 
 		 (mainLoop)
 		 ,(logprint "finish run" `())))
@@ -484,6 +500,9 @@
 	       (color_buffer :type CUDABuffer)
 	       ;;
 	       (last_set_camera :type camera_t)
+	       ;;
+	       (vertex_buffer :type CUDABuffer)
+	       (index_buffer :type CUDABuffer)
 	       )
 	      (do0
 	       "// derived from Ingo Wald's optix7course example03_inGLFWindow SampleRenderer.cpp"
@@ -744,7 +763,43 @@
 					 ,(g `launch_params.camera_direction))))))
 		      collect
 			`(setf (dot ,(g `launch_params) ,(format nil "camera_~a" e)) ,f))))
-	     (defun initOptix ()
+
+	     (defun buildAccel (model)
+	       (declare (type "const triangle_mesh_t&" model)
+			(values OptixTraversableHandle)
+			)
+	       ,@(loop for e in `(vertex index) collect
+		      `(dot ,(g (format nil "~a_buffer" e)) (alloc_and_upload
+						       (dot model ,(format nil "_~a" e)))))
+	       (let ((handle (curly 0))
+		     (triangle_input (curly))
+		     (d_vertices (dot ,(g `vertex_buffer) (d_pointer)))
+		     (d_indices (dot ,(g `index_buffer) (d_pointer)))
+		     (triangle_input_flags[] (curly 0)))
+		 (declare (type OptixTraversableHandle handle)
+			  (type OptixBuildInput triangle_input)
+			  (type uint32_t triangle_input_flags[]))
+		 ,(set-members `(triangle_input
+				 :type OPTIX_BUILD_INPUT_TYPE_TRIANGLES
+				 :triangleArray.vertexFormat OPTIX_VERTEX_FORMAT_FLOAT3
+				 :triangleArray.vertexStrideInBytes (sizeof "glm::vec3")
+				 :triangleArray.numVertices (static_cast<int> (model._vertex.size))
+				 ;; FIXME reference or not (inconsistent in 04)
+				 :triangleArray.vertexBuffers &d_vertices
+				 :triangleArray.indexFormat OPTIX_INDICES_FORMAT_UNSIGNED_INT3
+				 :triangleArray.indexStrideInBytes (sizeof "glm::ivec3")
+				 :triangleArray.numIndexTriplets  (static_cast<int> (model._index.size))
+				 :triangleArray.indexBuffer d_indices
+
+				 :triangleArray.flags triangle_input_flags
+				 :triangleArray.numSbtRecords 1
+				 :triangleArray.sbtIndexOffsetBuffer 0
+				 :triangleArray.sbtIndexOffsetSizeInBytes 0
+				 :triangleArray.sbtIndexOffsetStrideInBytes 0
+				 ))))
+
+	     (defun initOptix (model)
+	       (declare (type "const triangle_mesh_t&" model))
 	       ,(logprint "initOptix" '())
 	       (cudaFree 0)
 	       (let ((num_devices))
@@ -758,8 +813,12 @@
 	       (createRayGenPrograms)
 	       (createMissPrograms)
 	       (createHitGroupPrograms)
+	       (setf (dot ,(g `launch_params)
+			  traversable)
+		     (buildAccel model))
 	       (createPipeline)
 	       (buildSBT)
+
 	       (dot ,(g `launch_params_buffer)
 		    (alloc (sizeof LaunchParams)))
 	       )

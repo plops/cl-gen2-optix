@@ -24,5 +24,6 @@ void render ();
 void resize (int x, int y);
 void download_pixels (uint32_t* h_pixels);
 void set_camera (const camera_t& camera);
-void initOptix ();
+OptixTraversableHandle buildAccel (const triangle_mesh_t& model);
+void initOptix (const triangle_mesh_t& model);
 void cleanupOptix ();

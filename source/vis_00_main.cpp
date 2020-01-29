@@ -20,9 +20,20 @@ void mainLoop() {
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("mainLoop") << (" ")
       << (std::endl) << (std::flush);
+  static bool first_run = true;
+  static triangle_mesh_t model;
+  static camera_t camera = {glm::vec3((-1.e+1f), (2.e+0f), (-1.2e+1f)),
+                            glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f)),
+                            glm::vec3((0.0e+0f), (1.e+0f), (0.0e+0f))};
+  if (first_run) {
+    model.add_cube(glm::vec3((0.0e+0f), (-1.5e+0f), (0.0e+0f)),
+                   glm::vec3((1.e+1f), (1.e-1f), (1.e+1f)));
+    model.add_cube(glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f)),
+                   glm::vec3((2.e+0f), (2.e+0f), (2.e+0f)));
+    initOptix(model);
+  };
   while (!(glfwWindowShouldClose(state._window))) {
     {
-      static bool first_run = true;
       if (((first_run) || (state._framebufferResized))) {
         int width = 0;
         int height = 0;
@@ -94,7 +105,6 @@ void run() {
   initWindow();
   initGui();
   initDraw();
-  initOptix();
   mainLoop();
 
   (std::cout)

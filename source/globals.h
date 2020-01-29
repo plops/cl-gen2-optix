@@ -197,6 +197,8 @@ public:
 struct State {
   typeof(std::chrono::high_resolution_clock::now().time_since_epoch().count())
       _start_time;
+  CUDABuffer index_buffer;
+  CUDABuffer vertex_buffer;
   camera_t last_set_camera;
   CUDABuffer color_buffer;
   CUDABuffer launch_params_buffer;
