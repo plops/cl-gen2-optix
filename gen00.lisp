@@ -503,6 +503,9 @@
 	       ;;
 	       (vertex_buffer :type CUDABuffer)
 	       (index_buffer :type CUDABuffer)
+	       ;;
+	       (accel_buffer :type CUDABuffer)
+	       
 	       )
 	      (do0
 	       "// derived from Ingo Wald's optix7course example03_inGLFWindow SampleRenderer.cpp"
@@ -796,7 +799,81 @@
 				 :triangleArray.sbtIndexOffsetBuffer 0
 				 :triangleArray.sbtIndexOffsetSizeInBytes 0
 				 :triangleArray.sbtIndexOffsetStrideInBytes 0
-				 ))))
+				 ))
+		 (let ((accel_options (curly)))
+		   (declare (type OptixAccelBuildOptions accel_options))
+		   ,(set-members `(accel_options
+				   :buildFlags (logior OPTIX_BUILD_FLAG_NONE
+						       OPTIX_BUILD_FLAG_ALLOW_COMPACTION)
+				   :motionOptions.numKeys 1
+				   :operation OPTIX_BUILD_OPERATION_BUILD)))
+		 (let ((blas_buffer_sizes))
+		   (declare (type OptixAccelBufferSizes blas_buffer_sizes))
+		   ,(ox `(optixAccelComputeMemoryUsage
+			  ,(g `oxctx)
+			  &accel_options
+			  &triangle_input
+			  1
+			  &blas_buffer_sizes)))
+		 ;; prepare compaction
+		 (let ((compacted_size_buffer)
+		       (emit_desc))
+		   (declare (type CUDABuffer compacted_size_buffer)
+			    (type OptixAccelEmitDesc emit_desc))
+		   (compacted_size_buffer.alloc (sizeof uint64_t))
+		   ,(set-members `(emit_desc
+				   :type OPTIX_PROPERTY_TYPE_COMPACTED_SIZE
+				   :result (compacted_size_buffer.d_pointer))))
+		 ;; execute build
+		 (let ((temp_buffer)
+		       (output_buffer))
+		   (declare (type CUDABuffer temp_buffer output_buffer))
+		   (temp_buffer.alloc blas_buffer_sizes.tempSizeInBytes)
+		   (output_buffer.alloc blas_buffer_sizes.outputSizeInBytes)
+		   ,(ox `(optixAccelBuild
+			  ,(g `oxctx)
+			  0 ;; stream
+			  &accel_options
+			  &triangle_input
+			  1
+			  (temp_buffer.d_pointer)
+			  temp_buffer._size_in_bytes
+			  (output_buffer.d_pointer)
+			  output_buffer._size_in_bytes
+			  &handle
+			  &emit_desc
+			  1)))
+		 (progn
+		 (cudaDeviceSynchronize)
+		 ,(cu `(cudaGetLastError)))
+
+		 ;; perform compaction
+		 (let ((compacted_size))
+		   (declare (type uint64_t compacted_size))
+		   (compacted_size_buffer.download &compacted_size 1)
+		   (dot ,(g `accel_buffer)
+			(alloc compacted_size))
+		   ,(ox `(optixAccelCompact
+			  ,(g `oxctx)
+			  0 ;; stream
+			  handle
+			  (,(g `accel_buffer.d_pointer))
+			  ,(g `accel_buffer._size_in_bytes)
+			  &handle
+			  ))
+		   (progn
+		 (cudaDeviceSynchronize)
+		 ,(cu `(cudaGetLastError))))
+
+		 ;; clean up
+
+		 (output_buffer.free)
+		 (temp_buffer.free)
+		 (compacted_size_buffer.free)
+		 (return handle)
+		 
+
+		 ))
 
 	     (defun initOptix (model)
 	       (declare (type "const triangle_mesh_t&" model))

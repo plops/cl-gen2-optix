@@ -595,6 +595,125 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
   triangle_input.triangleArray.sbtIndexOffsetBuffer = 0;
   triangle_input.triangleArray.sbtIndexOffsetSizeInBytes = 0;
   triangle_input.triangleArray.sbtIndexOffsetStrideInBytes = 0;
+  OptixAccelBuildOptions accel_options = {};
+  accel_options.buildFlags =
+      ((OPTIX_BUILD_FLAG_NONE) | (OPTIX_BUILD_FLAG_ALLOW_COMPACTION));
+  accel_options.motionOptions.numKeys = 1;
+  accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
+  OptixAccelBufferSizes blas_buffer_sizes;
+  {
+    OptixResult res = optixAccelComputeMemoryUsage(
+        state.oxctx, &accel_options, &triangle_input, 1, &blas_buffer_sizes);
+    if (!((OPTIX_SUCCESS) == (res))) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ")
+                  << ("FAIL: optix optixAccelComputeMemoryUsage(state.oxctx, "
+                      "&accel_options, &triangle_input, 1, &blas_buffer_sizes)")
+                  << (" ") << (std::setw(8)) << (" res=") << (res)
+                  << (std::endl) << (std::flush);
+    };
+  };
+  CUDABuffer compacted_size_buffer;
+  OptixAccelEmitDesc emit_desc;
+  compacted_size_buffer.alloc(sizeof(uint64_t));
+  emit_desc.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
+  emit_desc.result = compacted_size_buffer.d_pointer();
+  CUDABuffer temp_buffer;
+  CUDABuffer output_buffer;
+  temp_buffer.alloc(blas_buffer_sizes.tempSizeInBytes);
+  output_buffer.alloc(blas_buffer_sizes.outputSizeInBytes);
+  {
+    OptixResult res =
+        optixAccelBuild(state.oxctx, 0, &accel_options, &triangle_input, 1,
+                        temp_buffer.d_pointer(), temp_buffer._size_in_bytes,
+                        output_buffer.d_pointer(), output_buffer._size_in_bytes,
+                        &handle, &emit_desc, 1);
+    if (!((OPTIX_SUCCESS) == (res))) {
+
+      (std::cout)
+          << (std::setw(10))
+          << (std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count())
+          << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+          << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+          << ("FAIL: optix optixAccelBuild(state.oxctx, 0, &accel_options, "
+              "&triangle_input, 1, temp_buffer.d_pointer(), "
+              "temp_buffer._size_in_bytes, output_buffer.d_pointer(), "
+              "output_buffer._size_in_bytes, &handle, &emit_desc, 1)")
+          << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
+          << (std::flush);
+    };
+  };
+  {
+    cudaDeviceSynchronize();
+    {
+      auto res = cudaGetLastError();
+      if (!((CUDA_SUCCESS) == (res))) {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
+                    << (std::setw(8)) << (" res=") << (res) << (std::endl)
+                    << (std::flush);
+      };
+    };
+  };
+  uint64_t compacted_size;
+  compacted_size_buffer.download(&compacted_size, 1);
+  state.accel_buffer.alloc(compacted_size);
+  {
+    OptixResult res = optixAccelCompact(
+        state.oxctx, 0, handle, (state.accel_buffer.d_pointer)(),
+        state.accel_buffer._size_in_bytes, &handle);
+    if (!((OPTIX_SUCCESS) == (res))) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ")
+                  << ("FAIL: optix optixAccelCompact(state.oxctx, 0, handle, "
+                      "(state.accel_buffer.d_pointer)(), "
+                      "state.accel_buffer._size_in_bytes, &handle)")
+                  << (" ") << (std::setw(8)) << (" res=") << (res)
+                  << (std::endl) << (std::flush);
+    };
+  };
+  {
+    cudaDeviceSynchronize();
+    {
+      auto res = cudaGetLastError();
+      if (!((CUDA_SUCCESS) == (res))) {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
+                    << (std::setw(8)) << (" res=") << (res) << (std::endl)
+                    << (std::flush);
+      };
+    };
+  };
+  output_buffer.free();
+  temp_buffer.free();
+  compacted_size_buffer.free();
+  return handle;
 }
 void initOptix(const triangle_mesh_t &model) {
 
