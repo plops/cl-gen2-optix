@@ -43,11 +43,37 @@ extern "C" __global__ void __closesthit__radiance() {
   prd = random_color(id);
 }
 extern "C" __global__ void __anyhit__radiance() {}
-extern "C" __global__ void __miss__radiance() {}
+extern "C" __global__ void __miss__radiance() {
+  glm::vec3 &prd = *(get_prd<glm::vec3>());
+  prd = glm::vec3((1.e+0f));
+}
 extern "C" __global__ void __raygen__renderFrame() {
   const int frameID = optixLaunchParams.frameID;
   auto ix = optixGetLaunchIndex().x;
   auto iy = optixGetLaunchIndex().y;
+  auto camera_position = optixLaunchParams.camera_position;
+  auto camera_direction = optixLaunchParams.camera_direction;
+  auto camera_horizontal = optixLaunchParams.camera_horizontal;
+  auto camera_vertical = optixLaunchParams.camera_vertical;
+  auto pixel_color_prd = glm::vec3((0.0e+0f));
+  auto u0 = uint32_t(0);
+  auto u1 = uint32_t(0);
+  auto screen =
+      ((glm::vec2(((ix) + (.5f)), ((iy) + (.5f)))) /
+       (glm::vec2(optixLaunchParams.fbSize_x, optixLaunchParams.fbSize_y)));
+  auto ray_dir =
+      glm::normalize(((camera_direction) +
+                      (((camera_horizontal) * (((screen[0]) - ((5.e-1f)))))) +
+                      (((camera_vertical) * (((screen[1]) - ((5.e-1f))))))));
   auto fbIndex = ((ix) + (((iy) * (optixLaunchParams.fbSize_x))));
-  optixLaunchParams.colorBuffer[fbIndex] = 0xFF123456;
+  auto pos = reinterpret_cast<float3 *>(&camera_position);
+  auto dir = reinterpret_cast<float3 *>(&ray_dir);
+  optixTrace(optixLaunchParams.traversable, *pos, *dir, (0.0e+0f), (1.e+20f),
+             (0.0e+0f), OptixVisibilityMask(255), OPTIX_RAY_FLAG_DISABLE_ANYHIT,
+             SURFACE_RAY_TYPE, RAY_TYPE_COUNT, SURFACE_RAY_TYPE, u0, u1);
+  auto r = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd[0])));
+  auto g = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd[1])));
+  auto b = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd[2])));
+  auto rgba = ((4278190080) | ((r) << (0)) | ((g) << (8)) | ((b) << (16)));
+  optixLaunchParams.colorBuffer[fbIndex] = rgba;
 };

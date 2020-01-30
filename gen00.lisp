@@ -980,19 +980,62 @@
 	 (defun __anyhit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __miss__radiance ()
-	   (declare (values "extern \"C\" __global__ void")))
+	   (declare (values "extern \"C\" __global__ void"))
+	   (let (
+		 (prd (deref ("get_prd<glm::vec3>")))
+		 )
+	     (declare (type "glm::vec3&" prd))
+	     (setf prd ("glm::vec3" 1s0))))
 	 (defun __raygen__renderFrame ()
 	   (declare (values "extern \"C\" __global__ void"))
 	   (let ((frameID optixLaunchParams.frameID)
 		 (ix (dot (optixGetLaunchIndex) x))
 		 (iy (dot (optixGetLaunchIndex) y))
+		 ,@(loop for e in `(position direction horizontal vertical)
+		      collect
+			(let ((v (format nil "camera_~a" e)))
+			  `(,v (dot optixLaunchParams ,v))))
+		 (pixel_color_prd ("glm::vec3" 0s0)) ;; will be overwritten by hit or miss
+		 (u0 (uint32_t 0))
+		 (u1 (uint32_t 0))
+		 (screen (/ ("glm::vec2"
+			     (+ ix .5f)
+			     (+ iy .5f))
+			    ("glm::vec2"
+			     (dot optixLaunchParams fbSize_x)
+			     (dot optixLaunchParams fbSize_y))))
+		 (ray_dir ("glm::normalize"
+			   (+ camera_direction
+			      (* camera_horizontal (- (aref screen 0) .5s0))
+			      (* camera_vertical (- (aref screen 1) .5s0)))
+			   ))
 		 (fbIndex (+ ix
 			     (* iy optixLaunchParams.fbSize_x))))
 	     (declare (type "const int" frameID)))
+	   (let ((pos (reinterpret_cast<float3*> &camera_position))
+		 (dir (reinterpret_cast<float3*> &ray_dir)))
+	    (optixTrace
+	     optixLaunchParams.traversable
+	     *pos
+	     *dir
+	     0s0 ;; tmin
+	     1s20 ;; tmax
+	     0s0  ;; ray time
+	     (OptixVisibilityMask 255)
+	     OPTIX_RAY_FLAG_DISABLE_ANYHIT
+	     SURFACE_RAY_TYPE
+	     RAY_TYPE_COUNT
+	     SURFACE_RAY_TYPE
+	     u0 u1))
+	   (let (,@(loop for e in `(r g b) and i from 0 collect
+			`(,e (static_cast<int> (* 255.99s0 (aref pixel_color_prd ,i)))))
+		 (rgba (logior #xff000000 ;; fully opaque alpha
+			       (<< r 0)
+			       (<< g 8)
+			       (<< b 16)))
+		 ))
 	   (setf (aref optixLaunchParams.colorBuffer fbIndex)
-		 (hex #xff123456)))
-	 
-	 )))
+		 rgba)))))
 
   
   (progn

@@ -5,3 +5,4 @@
  
 - https://github.com/tomilov/optix7course
 - https://drive.google.com/drive/folders/1_IYHwAZ4EoMcDmS0TknP-TZd7Cwmab_I
+- http://celarek.at/2014/10/how-is-glms-performance-in-cuda/ looks like i would have to consider aligned glm datatypes for better cuda performance
