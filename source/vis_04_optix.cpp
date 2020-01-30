@@ -572,6 +572,14 @@ void set_camera(const camera_t &camera) {
                                   state.launch_params.camera_direction))));
 }
 OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ")
+      << ("start building acceleration structure") << (" ") << (std::endl)
+      << (std::flush);
   state.vertex_buffer.alloc_and_upload(model._vertex);
   state.index_buffer.alloc_and_upload(model._index);
   OptixTraversableHandle handle = {0};
@@ -619,11 +627,25 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                   << (std::endl) << (std::flush);
     };
   };
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("prepare compaction")
+      << (" ") << (std::endl) << (std::flush);
   CUDABuffer compacted_size_buffer;
   OptixAccelEmitDesc emit_desc;
   compacted_size_buffer.alloc(sizeof(uint64_t));
   emit_desc.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
   emit_desc.result = compacted_size_buffer.d_pointer();
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("execute build")
+      << (" ") << (std::endl) << (std::flush);
   CUDABuffer temp_buffer;
   CUDABuffer output_buffer;
   temp_buffer.alloc(blas_buffer_sizes.tempSizeInBytes);

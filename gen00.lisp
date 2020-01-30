@@ -771,7 +771,7 @@
 	       (declare (type "const triangle_mesh_t&" model)
 			(values OptixTraversableHandle)
 			)
-	       ;;,(logprint "start building acceleration structure" `())
+	       ,(logprint "start building acceleration structure" `())
 	       ,@(loop for e in `(vertex index) collect
 		      `(dot ,(g (format nil "~a_buffer" e)) (alloc_and_upload
 						       (dot model ,(format nil "_~a" e)))))
@@ -816,7 +816,7 @@
 			  &triangle_input
 			  1
 			  &blas_buffer_sizes)))
-		 ;;,(logprint "prepare compaction" `())
+		 ,(logprint "prepare compaction" `())
 		 ;; prepare compaction
 		 (let ((compacted_size_buffer)
 		       (emit_desc))
@@ -826,7 +826,7 @@
 		   ,(set-members `(emit_desc
 				   :type OPTIX_PROPERTY_TYPE_COMPACTED_SIZE
 				   :result (compacted_size_buffer.d_pointer))))
-		 ;;,(logprint "execute build" `())
+		 ,(logprint "execute build" `())
 		 ;; execute build
 		 (let ((temp_buffer)
 		       (output_buffer))
