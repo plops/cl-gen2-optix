@@ -669,6 +669,13 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
       };
     };
   };
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("perform compaction")
+      << (" ") << (std::endl) << (std::flush);
   uint64_t compacted_size;
   compacted_size_buffer.download(&compacted_size, 1);
   state.accel_buffer.alloc(compacted_size);
@@ -710,6 +717,13 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
       };
     };
   };
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("clean up") << (" ")
+      << (std::endl) << (std::flush);
   output_buffer.free();
   temp_buffer.free();
   compacted_size_buffer.free();
