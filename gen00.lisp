@@ -945,10 +945,38 @@
 	     (setf i0 (>> uptr 32)
 		   i1 (& uptr (hex #xffffffff)))))
 
+	 (defun get_prd ()
+	   (declare (values "template<typename T> static __forceinline__ __device__ T*"))
+	   (let ((u0 (optixGetPayload_0))
+		 (u1 (optixGetPayload_1)))
+	     (return (reinterpret_cast<T*> (unpack_pointer u0 u1)))))
+
+	 (defun random_color (i)
+	   (declare (values "inline __device__ glm::vec3")
+		    (type int i))
+	   (let ((r (static_cast<int>
+		     (+ (hex #x234235)
+			(* 13 17 ("static_cast<unsigned>" i)))))
+		 (g (static_cast<int>
+		     (+ (hex #x773477)
+			(* 7 3 5 ("static_cast<unsigned>" i)))))
+		 (b (static_cast<int>
+		     (+ (hex #x223766)
+			(* 11 19 ("static_cast<unsigned>" i))))))
+	     (return ("glm::vec3" (/ (logand r 255) 255s0)
+			    (/ (logand g 255) 255s0)
+			    (/ (logand b 255) 255s0)))))
+
 	 
 	 
 	 (defun __closesthit__radiance ()
-	   (declare (values "extern \"C\" __global__ void")))
+	   (declare (values "extern \"C\" __global__ void"))
+	   (let ((id (optixGetPrimitiveIndex))
+		 (prd (deref ("get_prd<glm::vec3>")))
+		 )
+	     (declare (type "glm::vec3&" prd))
+	     (setf prd (random_color id))))
+	 
 	 (defun __anyhit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __miss__radiance ()
