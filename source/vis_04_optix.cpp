@@ -16,6 +16,31 @@ extern State state;
 #include <glm/geometric.hpp>
 extern "C" const char ptx_code[];
 void createContext() {
+  int count = 0;
+  {
+    auto res = cudaGetDeviceCount(&count);
+    if (!((CUDA_SUCCESS) == (res))) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("FAIL: cuda cudaGetDeviceCount(&count)") << (" ")
+                  << (std::setw(8)) << (" res=") << (res) << (std::endl)
+                  << (std::flush);
+    };
+  };
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("get device count")
+      << (" ") << (std::setw(8)) << (" count=") << (count) << (std::endl)
+      << (std::flush);
+  state.dev_id = 0;
   {
     auto res = cudaSetDevice(state.dev_id);
     if (!((CUDA_SUCCESS) == (res))) {

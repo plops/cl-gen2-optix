@@ -225,7 +225,7 @@ struct State {
   CUcontext cuctx;
   cudaDeviceProp dev_prop;
   CUstream stream;
-  const int dev_id;
+  int dev_id;
   GLuint _fontTex;
   bool _framebufferResized;
   GLFWwindow *_window;

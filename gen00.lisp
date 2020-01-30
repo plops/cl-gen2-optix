@@ -470,7 +470,7 @@
   (define-module
       `(optix (
 	       ;; createContext
-	       (dev_id :type "const int")
+	       (dev_id :type "int")
 	       (stream :type CUstream)
 	       (dev_prop :type cudaDeviceProp)
 	       (cuctx :type CUcontext)
@@ -520,6 +520,11 @@
 
 	     (defun createContext ()
 	       (declare (type "static void"))
+	       (let ((count 0))
+		 (declare (type int count))
+		 ,(cu `(cudaGetDeviceCount &count))
+		 ,(logprint "get device count" `(count)))
+	       (setf ,(g `dev_id) 0)
 	       ,(cu `(cudaSetDevice ,(g `dev_id)))
 	       ,(cu `(cudaStreamCreate (ref ,(g `stream))))
 	       (cudaGetDeviceProperties (ref ,(g `dev_prop))
