@@ -555,7 +555,7 @@ void render() {
         &(state.shader_bindings_table), state.launch_params.fbSize_x,
         state.launch_params.fbSize_y, 1);
     if (!((OPTIX_SUCCESS) == (res))) {
-
+ 
       (std::cout)
           << (std::setw(10))
           << (std::chrono::high_resolution_clock::now()
