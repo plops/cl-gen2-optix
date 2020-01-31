@@ -573,9 +573,8 @@ void render() {
     };
   };
   {
-    cudaDeviceSynchronize();
     {
-      auto res = cudaGetLastError();
+      auto res = cudaDeviceSynchronize();
       if (!((cudaSuccess) == (res))) {
         auto err_ = cudaGetLastError();
         auto err_name = cudaGetErrorName(err_);
@@ -587,12 +586,12 @@ void render() {
                             .count())
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
+                    << (" ") << ("FAIL: cuda cudaDeviceSynchronize()") << (" ")
                     << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
                     << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
                     << (err_name) << (std::setw(8)) << (" err_str=")
                     << (err_str) << (std::endl) << (std::flush);
-        throw std::runtime_error("cudaGetLastError()");
+        throw std::runtime_error("cudaDeviceSynchronize()");
       };
     };
   };
@@ -729,9 +728,8 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
     };
   };
   {
-    cudaDeviceSynchronize();
     {
-      auto res = cudaGetLastError();
+      auto res = cudaDeviceSynchronize();
       if (!((cudaSuccess) == (res))) {
         auto err_ = cudaGetLastError();
         auto err_name = cudaGetErrorName(err_);
@@ -743,12 +741,12 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                             .count())
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
+                    << (" ") << ("FAIL: cuda cudaDeviceSynchronize()") << (" ")
                     << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
                     << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
                     << (err_name) << (std::setw(8)) << (" err_str=")
                     << (err_str) << (std::endl) << (std::flush);
-        throw std::runtime_error("cudaGetLastError()");
+        throw std::runtime_error("cudaDeviceSynchronize()");
       };
     };
   };
@@ -783,9 +781,8 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
     };
   };
   {
-    cudaDeviceSynchronize();
     {
-      auto res = cudaGetLastError();
+      auto res = cudaDeviceSynchronize();
       if (!((cudaSuccess) == (res))) {
         auto err_ = cudaGetLastError();
         auto err_name = cudaGetErrorName(err_);
@@ -797,12 +794,12 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                             .count())
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
+                    << (" ") << ("FAIL: cuda cudaDeviceSynchronize()") << (" ")
                     << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
                     << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
                     << (err_name) << (std::setw(8)) << (" err_str=")
                     << (err_str) << (std::endl) << (std::flush);
-        throw std::runtime_error("cudaGetLastError()");
+        throw std::runtime_error("cudaDeviceSynchronize()");
       };
     };
   };

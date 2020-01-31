@@ -88,8 +88,8 @@ public:
 };
 class CUDABuffer {
 public:
-  void *_d_ptr;
-  size_t _size_in_bytes;
+  void *_d_ptr = nullptr;
+  size_t _size_in_bytes = 0;
   CUdeviceptr d_pointer() { return reinterpret_cast<CUdeviceptr>(_d_ptr); }
   void resize(size_t size) {
     if (_d_ptr) {
@@ -98,7 +98,18 @@ public:
     alloc(size);
   }
   void alloc(size_t size) {
-    assert((nullptr) == (_d_ptr));
+    if (!((nullptr) == (_d_ptr))) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("FAIL:") << (" ") << (std::setw(8))
+                  << (" _d_ptr=") << (_d_ptr) << (std::endl) << (std::flush);
+      throw std::runtime_error("CUDABuffer::alloc");
+    };
     this->_size_in_bytes = size;
     {
       auto res = cudaMalloc(static_cast<void **>(&_d_ptr), _size_in_bytes);

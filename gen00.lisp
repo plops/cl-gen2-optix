@@ -736,8 +736,8 @@
 		      ,(g `launch_params.fbSize_y)
 		      1))
 	       (progn
-		 (cudaDeviceSynchronize)
-		 ,(cu `(cudaGetLastError))))
+		 ,(cu `(cudaDeviceSynchronize))
+		 ))
 	     (defun resize (x y)
 	       (declare (type int x y))
 	       (dot ,(g `color_buffer)
@@ -860,8 +860,8 @@
 			  &emit_desc
 			  1)))
 		 (progn
-		 (cudaDeviceSynchronize)
-		 ,(cu `(cudaGetLastError)))
+		 ,(cu `(cudaDeviceSynchronize))
+		 )
 
 		 ,(logprint "perform compaction" `())
 		 ;; perform compaction
@@ -879,8 +879,8 @@
 			  &handle
 			  ))
 		   (progn
-		 (cudaDeviceSynchronize)
-		 ,(cu `(cudaGetLastError))))
+		     ,(cu `(cudaDeviceSynchronize))
+		     ))
 
 		 ;; clean up
 		 ,(logprint "clean up" `())
@@ -1263,8 +1263,8 @@
 		    (do0
 		     (defclass CUDABuffer ()
 		       "public:"
-		       (let ((_d_ptr)
-			     (_size_in_bytes))
+		       (let ((_d_ptr nullptr)
+			     (_size_in_bytes 0))
 			 (declare (type void* _d_ptr)
 				  (type size_t _size_in_bytes)))
 		       (defun d_pointer ()
@@ -1277,7 +1277,10 @@
 			 (alloc size))
 		       (defun alloc (size)
 			 (declare (type size_t size))
-			 (assert (== nullptr _d_ptr))
+			 (unless (== nullptr _d_ptr)
+			   ,(logprint "FAIL:" `(_d_ptr))
+			   (throw ("std::runtime_error"
+				   (string "CUDABuffer::alloc"))))
 			 (setf this->_size_in_bytes size)
 			 ,(cu `(cudaMalloc (static_cast<void**> &_d_ptr)
 					  _size_in_bytes)))
