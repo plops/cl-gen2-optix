@@ -5,7 +5,7 @@ LDFLAGS=-lglfw  -lGL -ldl \
 CXXFLAGS=-ffast-math -std=gnu++1z -O0 \
 -I/opt/cuda/targets/x86_64-linux/include \
 -I/home/martin/optix/include \
--march=native -ggdb -fsanitize=address
+-march=native #-ggdb -fsanitize=address
 
 CFILES:=$(shell find .| grep .cpp$)
 CUFILES:=$(shell ls | grep .cu$)

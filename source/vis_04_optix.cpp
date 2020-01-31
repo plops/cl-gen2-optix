@@ -826,7 +826,6 @@ void initOptix(const triangle_mesh_t &model) {
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("initOptix") << (" ")
       << (std::endl) << (std::flush);
-  cudaFree(0);
   int num_devices;
   cudaGetDeviceCount(&num_devices);
   if ((0) == (num_devices)) {
