@@ -1,7 +1,7 @@
 CXX=g++ 
 LDFLAGS=-lglfw  -lGL -ldl \
 -L/opt/cuda/targets/x86_64-linux/lib -lcudart -lcuda \
--L/opt/cuda/targets/x86_64-linux/lib -lnvoptix
+-lnvoptix
 CXXFLAGS=-ffast-math -std=gnu++1z -O0 \
 -I/opt/cuda/targets/x86_64-linux/include \
 -I/home/martin/optix/include \

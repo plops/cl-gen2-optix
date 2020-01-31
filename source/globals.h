@@ -115,6 +115,8 @@ public:
                         "_size_in_bytes)")
                     << (" ") << (std::setw(8)) << (" res=") << (res)
                     << (std::endl) << (std::flush);
+        throw std::runtime_error(
+            "cudaMalloc(static_cast<void**>(&_d_ptr), _size_in_bytes)");
       };
     };
   }
@@ -132,6 +134,7 @@ public:
                     << (" ") << ("FAIL: cuda cudaFree(_d_ptr)") << (" ")
                     << (std::setw(8)) << (" res=") << (res) << (std::endl)
                     << (std::flush);
+        throw std::runtime_error("cudaFree(_d_ptr)");
       };
     };
     _d_ptr = nullptr;
@@ -160,6 +163,9 @@ public:
                 "((count)*(sizeof(T))), cudaMemcpyHostToDevice)")
             << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
             << (std::flush);
+        throw std::runtime_error(
+            "cudaMemcpy(_d_ptr, static_cast<const void*>(dat), "
+            "((count)*(sizeof(T))), cudaMemcpyHostToDevice)");
       };
     };
   }
@@ -182,6 +188,9 @@ public:
                 "((count)*(sizeof(T))), cudaMemcpyDeviceToHost)")
             << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
             << (std::flush);
+        throw std::runtime_error(
+            "cudaMemcpy(static_cast<void*>(dat), _d_ptr, "
+            "((count)*(sizeof(T))), cudaMemcpyDeviceToHost)");
       };
     };
   }

@@ -62,14 +62,17 @@
 	  (unless (== OPTIX_SUCCESS res)
 	    ,(logprint (format nil (string "FAIL: optix ~a")
 			       (cl-cpp-generator2::emit-c :code code))
-		       `(res))))))
+		       `(res))
+	    ))))
     (defun cu (code)
       `(progn
 	 (let ((res ,code))
 	  (unless (== CUDA_SUCCESS res)
 	    ,(logprint (format nil (string "FAIL: cuda ~a")
 			       (cl-cpp-generator2::emit-c :code code))
-		       `(res))))))
+		       `(res))
+	    (throw ("std::runtime_error" (string ,(format nil (string "~a")
+						   (cl-cpp-generator2::emit-c :code code)))))))))
     (defun logprint (msg &optional rest)
       `(do0
 	" "
@@ -887,7 +890,7 @@
 	     (defun initOptix (model)
 	       (declare (type "const triangle_mesh_t&" model))
 	       ,(logprint "initOptix" '())
-	       (cudaFree 0)
+	       ;(cudaFree 0)
 	       (let ((num_devices))
 		 (declare (type int num_devices))
 		 (cudaGetDeviceCount &num_devices))

@@ -30,6 +30,7 @@ void createContext() {
                   << (" ") << ("FAIL: cuda cudaGetDeviceCount(&count)") << (" ")
                   << (std::setw(8)) << (" res=") << (res) << (std::endl)
                   << (std::flush);
+      throw std::runtime_error("cudaGetDeviceCount(&count)");
     };
   };
 
@@ -54,6 +55,7 @@ void createContext() {
                   << (" ") << ("FAIL: cuda cudaSetDevice(state.dev_id)")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
                   << (std::endl) << (std::flush);
+      throw std::runtime_error("cudaSetDevice(state.dev_id)");
     };
   };
   {
@@ -69,6 +71,7 @@ void createContext() {
                   << (" ") << ("FAIL: cuda cudaStreamCreate(&(state.stream))")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
                   << (std::endl) << (std::flush);
+      throw std::runtime_error("cudaStreamCreate(&(state.stream))");
     };
   };
   cudaGetDeviceProperties(&(state.dev_prop), state.dev_id);
@@ -93,6 +96,7 @@ void createContext() {
                   << (" ") << ("FAIL: cuda cuCtxGetCurrent(&(state.cuctx))")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
                   << (std::endl) << (std::flush);
+      throw std::runtime_error("cuCtxGetCurrent(&(state.cuctx))");
     };
   };
   {
@@ -563,6 +567,7 @@ void render() {
                     << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
                     << (std::setw(8)) << (" res=") << (res) << (std::endl)
                     << (std::flush);
+        throw std::runtime_error("cudaGetLastError()");
       };
     };
   };
@@ -713,6 +718,7 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                     << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
                     << (std::setw(8)) << (" res=") << (res) << (std::endl)
                     << (std::flush);
+        throw std::runtime_error("cudaGetLastError()");
       };
     };
   };
@@ -761,6 +767,7 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                     << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
                     << (std::setw(8)) << (" res=") << (res) << (std::endl)
                     << (std::flush);
+        throw std::runtime_error("cudaGetLastError()");
       };
     };
   };
@@ -784,7 +791,6 @@ void initOptix(const triangle_mesh_t &model) {
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("initOptix") << (" ")
       << (std::endl) << (std::flush);
-  cudaFree(0);
   int num_devices;
   cudaGetDeviceCount(&num_devices);
   if ((0) == (num_devices)) {
