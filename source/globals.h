@@ -102,7 +102,10 @@ public:
     this->_size_in_bytes = size;
     {
       auto res = cudaMalloc(static_cast<void **>(&_d_ptr), _size_in_bytes);
-      if (!((CUDA_SUCCESS) == (res))) {
+      if (!((cudaSuccess) == (res))) {
+        auto err_ = cudaGetLastError();
+        auto err_name = cudaGetErrorName(err_);
+        auto err_str = cudaGetErrorString(err_);
 
         (std::cout) << (std::setw(10))
                     << (std::chrono::high_resolution_clock::now()
@@ -114,7 +117,10 @@ public:
                     << ("FAIL: cuda cudaMalloc(static_cast<void**>(&_d_ptr), "
                         "_size_in_bytes)")
                     << (" ") << (std::setw(8)) << (" res=") << (res)
-                    << (std::endl) << (std::flush);
+                    << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
+                    << (" err_name=") << (err_name) << (std::setw(8))
+                    << (" err_str=") << (err_str) << (std::endl)
+                    << (std::flush);
         throw std::runtime_error(
             "cudaMalloc(static_cast<void**>(&_d_ptr), _size_in_bytes)");
       };
@@ -123,7 +129,10 @@ public:
   void free() {
     {
       auto res = cudaFree(_d_ptr);
-      if (!((CUDA_SUCCESS) == (res))) {
+      if (!((cudaSuccess) == (res))) {
+        auto err_ = cudaGetLastError();
+        auto err_name = cudaGetErrorName(err_);
+        auto err_str = cudaGetErrorString(err_);
 
         (std::cout) << (std::setw(10))
                     << (std::chrono::high_resolution_clock::now()
@@ -132,8 +141,10 @@ public:
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                     << (" ") << ("FAIL: cuda cudaFree(_d_ptr)") << (" ")
-                    << (std::setw(8)) << (" res=") << (res) << (std::endl)
-                    << (std::flush);
+                    << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
+                    << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
+                    << (err_name) << (std::setw(8)) << (" err_str=")
+                    << (err_str) << (std::endl) << (std::flush);
         throw std::runtime_error("cudaFree(_d_ptr)");
       };
     };
@@ -150,7 +161,10 @@ public:
     {
       auto res = cudaMemcpy(_d_ptr, static_cast<const void *>(dat),
                             ((count) * (sizeof(T))), cudaMemcpyHostToDevice);
-      if (!((CUDA_SUCCESS) == (res))) {
+      if (!((cudaSuccess) == (res))) {
+        auto err_ = cudaGetLastError();
+        auto err_name = cudaGetErrorName(err_);
+        auto err_str = cudaGetErrorString(err_);
 
         (std::cout)
             << (std::setw(10))
@@ -161,8 +175,10 @@ public:
             << (":") << (__LINE__) << (" ") << (__func__) << (" ")
             << ("FAIL: cuda cudaMemcpy(_d_ptr, static_cast<const void*>(dat), "
                 "((count)*(sizeof(T))), cudaMemcpyHostToDevice)")
-            << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
-            << (std::flush);
+            << (" ") << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
+            << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
+            << (err_name) << (std::setw(8)) << (" err_str=") << (err_str)
+            << (std::endl) << (std::flush);
         throw std::runtime_error(
             "cudaMemcpy(_d_ptr, static_cast<const void*>(dat), "
             "((count)*(sizeof(T))), cudaMemcpyHostToDevice)");
@@ -175,7 +191,10 @@ public:
     {
       auto res = cudaMemcpy(static_cast<void *>(dat), _d_ptr,
                             ((count) * (sizeof(T))), cudaMemcpyDeviceToHost);
-      if (!((CUDA_SUCCESS) == (res))) {
+      if (!((cudaSuccess) == (res))) {
+        auto err_ = cudaGetLastError();
+        auto err_name = cudaGetErrorName(err_);
+        auto err_str = cudaGetErrorString(err_);
 
         (std::cout)
             << (std::setw(10))
@@ -186,8 +205,10 @@ public:
             << (":") << (__LINE__) << (" ") << (__func__) << (" ")
             << ("FAIL: cuda cudaMemcpy(static_cast<void*>(dat), _d_ptr, "
                 "((count)*(sizeof(T))), cudaMemcpyDeviceToHost)")
-            << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
-            << (std::flush);
+            << (" ") << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
+            << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
+            << (err_name) << (std::setw(8)) << (" err_str=") << (err_str)
+            << (std::endl) << (std::flush);
         throw std::runtime_error(
             "cudaMemcpy(static_cast<void*>(dat), _d_ptr, "
             "((count)*(sizeof(T))), cudaMemcpyDeviceToHost)");

@@ -67,10 +67,15 @@
     (defun cu (code)
       `(progn
 	 (let ((res ,code))
-	  (unless (== CUDA_SUCCESS res)
-	    ,(logprint (format nil (string "FAIL: cuda ~a")
-			       (cl-cpp-generator2::emit-c :code code))
-		       `(res))
+	   (unless (== cudaSuccess ;; CUDA_SUCCESS
+		       res
+		       )
+	     (let ((err_ (cudaGetLastError))
+		   (err_name (cudaGetErrorName err_))
+		   (err_str (cudaGetErrorString err_)))
+	      ,(logprint (format nil (string "FAIL: cuda ~a")
+				 (cl-cpp-generator2::emit-c :code code))
+			 `(res err_ err_name err_str)))
 	    (throw ("std::runtime_error" (string ,(format nil (string "~a")
 						   (cl-cpp-generator2::emit-c :code code)))))))))
     (defun logprint (msg &optional rest)
@@ -890,7 +895,7 @@
 	     (defun initOptix (model)
 	       (declare (type "const triangle_mesh_t&" model))
 	       ,(logprint "initOptix" '())
-	       ;(cudaFree 0)
+	       (cudaFree 0)
 	       (let ((num_devices))
 		 (declare (type int num_devices))
 		 (cudaGetDeviceCount &num_devices))

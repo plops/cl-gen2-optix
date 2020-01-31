@@ -19,7 +19,10 @@ void createContext() {
   int count = 0;
   {
     auto res = cudaGetDeviceCount(&count);
-    if (!((CUDA_SUCCESS) == (res))) {
+    if (!((cudaSuccess) == (res))) {
+      auto err_ = cudaGetLastError();
+      auto err_name = cudaGetErrorName(err_);
+      auto err_str = cudaGetErrorString(err_);
 
       (std::cout) << (std::setw(10))
                   << (std::chrono::high_resolution_clock::now()
@@ -28,8 +31,10 @@ void createContext() {
                   << (" ") << (std::this_thread::get_id()) << (" ")
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                   << (" ") << ("FAIL: cuda cudaGetDeviceCount(&count)") << (" ")
-                  << (std::setw(8)) << (" res=") << (res) << (std::endl)
-                  << (std::flush);
+                  << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
+                  << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
+                  << (err_name) << (std::setw(8)) << (" err_str=") << (err_str)
+                  << (std::endl) << (std::flush);
       throw std::runtime_error("cudaGetDeviceCount(&count)");
     };
   };
@@ -44,7 +49,10 @@ void createContext() {
   state.dev_id = 0;
   {
     auto res = cudaSetDevice(state.dev_id);
-    if (!((CUDA_SUCCESS) == (res))) {
+    if (!((cudaSuccess) == (res))) {
+      auto err_ = cudaGetLastError();
+      auto err_name = cudaGetErrorName(err_);
+      auto err_str = cudaGetErrorString(err_);
 
       (std::cout) << (std::setw(10))
                   << (std::chrono::high_resolution_clock::now()
@@ -54,13 +62,18 @@ void createContext() {
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                   << (" ") << ("FAIL: cuda cudaSetDevice(state.dev_id)")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
-                  << (std::endl) << (std::flush);
+                  << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
+                  << (" err_name=") << (err_name) << (std::setw(8))
+                  << (" err_str=") << (err_str) << (std::endl) << (std::flush);
       throw std::runtime_error("cudaSetDevice(state.dev_id)");
     };
   };
   {
     auto res = cudaStreamCreate(&(state.stream));
-    if (!((CUDA_SUCCESS) == (res))) {
+    if (!((cudaSuccess) == (res))) {
+      auto err_ = cudaGetLastError();
+      auto err_name = cudaGetErrorName(err_);
+      auto err_str = cudaGetErrorString(err_);
 
       (std::cout) << (std::setw(10))
                   << (std::chrono::high_resolution_clock::now()
@@ -70,7 +83,9 @@ void createContext() {
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                   << (" ") << ("FAIL: cuda cudaStreamCreate(&(state.stream))")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
-                  << (std::endl) << (std::flush);
+                  << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
+                  << (" err_name=") << (err_name) << (std::setw(8))
+                  << (" err_str=") << (err_str) << (std::endl) << (std::flush);
       throw std::runtime_error("cudaStreamCreate(&(state.stream))");
     };
   };
@@ -85,7 +100,10 @@ void createContext() {
       << (state.dev_prop.name) << (std::endl) << (std::flush);
   {
     auto res = cuCtxGetCurrent(&(state.cuctx));
-    if (!((CUDA_SUCCESS) == (res))) {
+    if (!((cudaSuccess) == (res))) {
+      auto err_ = cudaGetLastError();
+      auto err_name = cudaGetErrorName(err_);
+      auto err_str = cudaGetErrorString(err_);
 
       (std::cout) << (std::setw(10))
                   << (std::chrono::high_resolution_clock::now()
@@ -95,7 +113,9 @@ void createContext() {
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                   << (" ") << ("FAIL: cuda cuCtxGetCurrent(&(state.cuctx))")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
-                  << (std::endl) << (std::flush);
+                  << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
+                  << (" err_name=") << (err_name) << (std::setw(8))
+                  << (" err_str=") << (err_str) << (std::endl) << (std::flush);
       throw std::runtime_error("cuCtxGetCurrent(&(state.cuctx))");
     };
   };
@@ -556,7 +576,10 @@ void render() {
     cudaDeviceSynchronize();
     {
       auto res = cudaGetLastError();
-      if (!((CUDA_SUCCESS) == (res))) {
+      if (!((cudaSuccess) == (res))) {
+        auto err_ = cudaGetLastError();
+        auto err_name = cudaGetErrorName(err_);
+        auto err_str = cudaGetErrorString(err_);
 
         (std::cout) << (std::setw(10))
                     << (std::chrono::high_resolution_clock::now()
@@ -565,8 +588,10 @@ void render() {
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                     << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
-                    << (std::setw(8)) << (" res=") << (res) << (std::endl)
-                    << (std::flush);
+                    << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
+                    << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
+                    << (err_name) << (std::setw(8)) << (" err_str=")
+                    << (err_str) << (std::endl) << (std::flush);
         throw std::runtime_error("cudaGetLastError()");
       };
     };
@@ -707,7 +732,10 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
     cudaDeviceSynchronize();
     {
       auto res = cudaGetLastError();
-      if (!((CUDA_SUCCESS) == (res))) {
+      if (!((cudaSuccess) == (res))) {
+        auto err_ = cudaGetLastError();
+        auto err_name = cudaGetErrorName(err_);
+        auto err_str = cudaGetErrorString(err_);
 
         (std::cout) << (std::setw(10))
                     << (std::chrono::high_resolution_clock::now()
@@ -716,8 +744,10 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                     << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
-                    << (std::setw(8)) << (" res=") << (res) << (std::endl)
-                    << (std::flush);
+                    << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
+                    << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
+                    << (err_name) << (std::setw(8)) << (" err_str=")
+                    << (err_str) << (std::endl) << (std::flush);
         throw std::runtime_error("cudaGetLastError()");
       };
     };
@@ -756,7 +786,10 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
     cudaDeviceSynchronize();
     {
       auto res = cudaGetLastError();
-      if (!((CUDA_SUCCESS) == (res))) {
+      if (!((cudaSuccess) == (res))) {
+        auto err_ = cudaGetLastError();
+        auto err_name = cudaGetErrorName(err_);
+        auto err_str = cudaGetErrorString(err_);
 
         (std::cout) << (std::setw(10))
                     << (std::chrono::high_resolution_clock::now()
@@ -765,8 +798,10 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                     << (" ") << ("FAIL: cuda cudaGetLastError()") << (" ")
-                    << (std::setw(8)) << (" res=") << (res) << (std::endl)
-                    << (std::flush);
+                    << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
+                    << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
+                    << (err_name) << (std::setw(8)) << (" err_str=")
+                    << (err_str) << (std::endl) << (std::flush);
         throw std::runtime_error("cudaGetLastError()");
       };
     };
@@ -791,6 +826,7 @@ void initOptix(const triangle_mesh_t &model) {
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("initOptix") << (" ")
       << (std::endl) << (std::flush);
+  cudaFree(0);
   int num_devices;
   cudaGetDeviceCount(&num_devices);
   if ((0) == (num_devices)) {
