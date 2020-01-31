@@ -125,7 +125,7 @@ public:
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                     << (" ")
-                    << ("FAIL: cuda cudaMalloc(static_cast<void**>(&_d_ptr), "
+                    << ("FAIL: cuda  cudaMalloc(static_cast<void**>(&_d_ptr), "
                         "_size_in_bytes)")
                     << (" ") << (std::setw(8)) << (" res=") << (res)
                     << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
@@ -151,7 +151,7 @@ public:
                             .count())
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("FAIL: cuda cudaFree(_d_ptr)") << (" ")
+                    << (" ") << ("FAIL: cuda  cudaFree(_d_ptr)") << (" ")
                     << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
                     << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
                     << (err_name) << (std::setw(8)) << (" err_str=")
@@ -184,7 +184,7 @@ public:
                     .count())
             << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
             << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-            << ("FAIL: cuda cudaMemcpy(_d_ptr, static_cast<const void*>(dat), "
+            << ("FAIL: cuda  cudaMemcpy(_d_ptr, static_cast<const void*>(dat), "
                 "((count)*(sizeof(T))), cudaMemcpyHostToDevice)")
             << (" ") << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
             << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
@@ -214,7 +214,7 @@ public:
                     .count())
             << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
             << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-            << ("FAIL: cuda cudaMemcpy(static_cast<void*>(dat), _d_ptr, "
+            << ("FAIL: cuda  cudaMemcpy(static_cast<void*>(dat), _d_ptr, "
                 "((count)*(sizeof(T))), cudaMemcpyDeviceToHost)")
             << (" ") << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
             << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")

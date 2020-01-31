@@ -30,11 +30,11 @@ void createContext() {
                           .count())
                   << (" ") << (std::this_thread::get_id()) << (" ")
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("FAIL: cuda cudaGetDeviceCount(&count)") << (" ")
-                  << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
-                  << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
-                  << (err_name) << (std::setw(8)) << (" err_str=") << (err_str)
-                  << (std::endl) << (std::flush);
+                  << (" ") << ("FAIL: cuda  cudaGetDeviceCount(&count)")
+                  << (" ") << (std::setw(8)) << (" res=") << (res)
+                  << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
+                  << (" err_name=") << (err_name) << (std::setw(8))
+                  << (" err_str=") << (err_str) << (std::endl) << (std::flush);
       throw std::runtime_error("cudaGetDeviceCount(&count)");
     };
   };
@@ -60,7 +60,7 @@ void createContext() {
                           .count())
                   << (" ") << (std::this_thread::get_id()) << (" ")
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("FAIL: cuda cudaSetDevice(state.dev_id)")
+                  << (" ") << ("FAIL: cuda  cudaSetDevice(state.dev_id)")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
                   << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
                   << (" err_name=") << (err_name) << (std::setw(8))
@@ -81,7 +81,7 @@ void createContext() {
                           .count())
                   << (" ") << (std::this_thread::get_id()) << (" ")
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("FAIL: cuda cudaStreamCreate(&(state.stream))")
+                  << (" ") << ("FAIL: cuda  cudaStreamCreate(&(state.stream))")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
                   << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
                   << (" err_name=") << (err_name) << (std::setw(8))
@@ -111,7 +111,7 @@ void createContext() {
                           .count())
                   << (" ") << (std::this_thread::get_id()) << (" ")
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("FAIL: cuda cuCtxGetCurrent(&(state.cuctx))")
+                  << (" ") << ("FAIL: cuda  cuCtxGetCurrent(&(state.cuctx))")
                   << (" ") << (std::setw(8)) << (" res=") << (res)
                   << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
                   << (" err_name=") << (err_name) << (std::setw(8))
@@ -586,11 +586,13 @@ void render() {
                             .count())
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("FAIL: cuda cudaDeviceSynchronize()") << (" ")
-                    << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
-                    << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
-                    << (err_name) << (std::setw(8)) << (" err_str=")
-                    << (err_str) << (std::endl) << (std::flush);
+                    << (" ")
+                    << ("FAIL: cuda after launch cudaDeviceSynchronize()")
+                    << (" ") << (std::setw(8)) << (" res=") << (res)
+                    << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
+                    << (" err_name=") << (err_name) << (std::setw(8))
+                    << (" err_str=") << (err_str) << (std::endl)
+                    << (std::flush);
         throw std::runtime_error("cudaDeviceSynchronize()");
       };
     };
@@ -741,11 +743,12 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                             .count())
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("FAIL: cuda cudaDeviceSynchronize()") << (" ")
-                    << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
-                    << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
-                    << (err_name) << (std::setw(8)) << (" err_str=")
-                    << (err_str) << (std::endl) << (std::flush);
+                    << (" ") << ("FAIL: cuda build cudaDeviceSynchronize()")
+                    << (" ") << (std::setw(8)) << (" res=") << (res)
+                    << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
+                    << (" err_name=") << (err_name) << (std::setw(8))
+                    << (" err_str=") << (err_str) << (std::endl)
+                    << (std::flush);
         throw std::runtime_error("cudaDeviceSynchronize()");
       };
     };
@@ -794,11 +797,13 @@ OptixTraversableHandle buildAccel(const triangle_mesh_t &model) {
                             .count())
                     << (" ") << (std::this_thread::get_id()) << (" ")
                     << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("FAIL: cuda cudaDeviceSynchronize()") << (" ")
-                    << (std::setw(8)) << (" res=") << (res) << (std::setw(8))
-                    << (" err_=") << (err_) << (std::setw(8)) << (" err_name=")
-                    << (err_name) << (std::setw(8)) << (" err_str=")
-                    << (err_str) << (std::endl) << (std::flush);
+                    << (" ")
+                    << ("FAIL: cuda compaction cudaDeviceSynchronize()")
+                    << (" ") << (std::setw(8)) << (" res=") << (res)
+                    << (std::setw(8)) << (" err_=") << (err_) << (std::setw(8))
+                    << (" err_name=") << (err_name) << (std::setw(8))
+                    << (" err_str=") << (err_str) << (std::endl)
+                    << (std::flush);
         throw std::runtime_error("cudaDeviceSynchronize()");
       };
     };

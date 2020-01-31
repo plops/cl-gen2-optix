@@ -64,7 +64,7 @@
 			       (cl-cpp-generator2::emit-c :code code))
 		       `(res))
 	    ))))
-    (defun cu (code)
+    (defun cu (code &optional (remark ""))
       `(progn
 	 (let ((res ,code))
 	   (unless (== cudaSuccess ;; CUDA_SUCCESS
@@ -73,7 +73,8 @@
 	     (let ((err_ (cudaGetLastError))
 		   (err_name (cudaGetErrorName err_))
 		   (err_str (cudaGetErrorString err_)))
-	      ,(logprint (format nil (string "FAIL: cuda ~a")
+	       ,(logprint (format nil (string "FAIL: cuda ~a ~a")
+				  remark
 				 (cl-cpp-generator2::emit-c :code code))
 			 `(res err_ err_name err_str)))
 	    (throw ("std::runtime_error" (string ,(format nil (string "~a")
@@ -736,7 +737,7 @@
 		      ,(g `launch_params.fbSize_y)
 		      1))
 	       (progn
-		 ,(cu `(cudaDeviceSynchronize))
+		 ,(cu `(cudaDeviceSynchronize) "after launch")
 		 ))
 	     (defun resize (x y)
 	       (declare (type int x y))
@@ -860,7 +861,7 @@
 			  &emit_desc
 			  1)))
 		 (progn
-		 ,(cu `(cudaDeviceSynchronize))
+		 ,(cu `(cudaDeviceSynchronize) "build")
 		 )
 
 		 ,(logprint "perform compaction" `())
@@ -879,7 +880,7 @@
 			  &handle
 			  ))
 		   (progn
-		     ,(cu `(cudaDeviceSynchronize))
+		     ,(cu `(cudaDeviceSynchronize) "compaction")
 		     ))
 
 		 ;; clean up
