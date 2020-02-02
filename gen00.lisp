@@ -1025,25 +1025,26 @@
 		 (prd (deref ("get_prd<glm::vec3>")))
 		 )
 	     (declare (type "glm::vec3&" prd))
-	     #+nil (printf (string "close %f %f %f")
+	      (printf (string "close %f %f %f")
 		     (aref prd 0)
 		     (aref prd 1)
 		     (aref prd 2))
-	     #+nil (setf prd (random_color id))))
+	     (setf prd (random_color id))))
 	 
 	 (defun __anyhit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __miss__radiance ()
 	   (declare (values "extern \"C\" __global__ void"))
+	   (printf (string "miss %llx\\n"  ("get_prd<glm::vec3>")))
 	   (let (
 		 (prd (deref ("get_prd<glm::vec3>")))
 		 )
 	     (declare (type "glm::vec3&" prd))
-	     #+nil (printf (string "miss %f %f %f")
+	     (printf (string "miss %f %f %f")
 		     (aref prd 0)
 		     (aref prd 1)
 		     (aref prd 2))
-	     #+nil (setf prd ("glm::vec3" 1s0))))
+	   (setf prd ("glm::vec3" 1s0))))
 	 (defun __excetion__all ()
 	   (declare (values "extern \"C\" __global__ void"))
 	   (printf (string "optix exception: %d\\n")
@@ -1076,10 +1077,12 @@
 		 (fbIndex (+ ix
 			     (* iy optixLaunchParams.fbSize_x))))
 	     (declare (type "const int" frameID)))
+	   (pack_pointer &pixel_color_prd u0 u1)
 	   (let ((pos (reinterpret_cast<float3*> &camera_position))
 		 (dir (reinterpret_cast<float3*> &ray_dir)))
 
-	    #+nil (printf (string "%03d %03d\\n") ix iy)
+	     #+nil (printf (string "%03d %03d\\n") ix iy)
+	     
 	    (optixTrace
 	     optixLaunchParams.traversable
 	     *pos
@@ -1099,8 +1102,7 @@
 		 (rgba (logior #xff000000 ;; fully opaque alpha
 			       (<< r 0)
 			       (<< g 8)
-			       (<< b 16)))
-		 ))
+			       (<< b 16)))))
 	   (setf (aref optixLaunchParams.colorBuffer fbIndex)
 		 rgba)))))
 
