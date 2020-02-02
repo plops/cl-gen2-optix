@@ -990,8 +990,7 @@
 		    (type void* ptr)
 		    (values "static __forceinline__ __device__ void"))
 	   
-	   (let ((uptr (reinterpret_cast<uint64_t> ptr))
-		 )
+	   (let ((uptr (reinterpret_cast<uint64_t> ptr)))
 	     (setf i0 (>> uptr 32)
 		   i1 (& uptr (hex #xffffffff)))))
 
@@ -1021,7 +1020,8 @@
 	 
 	 (defun __closesthit__radiance ()
 	   (declare (values "extern \"C\" __global__ void"))
-	   (let ((id (optixGetPrimitiveIndex))
+	   (printf (string "close %llx\\n"  ("get_prd<void>")))
+	   #+nil (let ((id (optixGetPrimitiveIndex))
 		 (prd (deref ("get_prd<glm::vec3>")))
 		 )
 	     (declare (type "glm::vec3&" prd))
@@ -1035,8 +1035,19 @@
 	   (declare (values "extern \"C\" __global__ void")))
 	 (defun __miss__radiance ()
 	   (declare (values "extern \"C\" __global__ void"))
-	   (printf (string "miss %llx\\n"  ("get_prd<glm::vec3>")))
-	   (let (
+	   (let ((prd ("get_prd<float3>")))
+	     (declare (type float3* prd))
+	     (setf prd->x 1s0
+		   prd->y 0s0
+		   prd->z 0s0))
+	   #+nil
+	   (let ((u0 (optixGetPayload_0))
+		 (u1 (optixGetPayload_1))
+		 (prd ("get_prd<float3>")))
+	     (printf (string "u0=%x u1=%x prd=%llx x=%f\\n")
+		    u0 u1 prd prd->x))
+	   ;(printf (string "miss %llx\\n"  ("get_prd<void>")))
+	   #+nil (let (
 		 (prd (deref ("get_prd<glm::vec3>")))
 		 )
 	     (declare (type "glm::vec3&" prd))
@@ -1076,8 +1087,12 @@
 		 ;(iy2 (max iy 100))
 		 (fbIndex (+ ix
 			     (* iy optixLaunchParams.fbSize_x))))
-	     (declare (type "const int" frameID)))
+	     (declare (type "const int" frameID)
+		      (type "glm::vec3" pixel_color_prd)))
+	   
 	   (pack_pointer &pixel_color_prd u0 u1)
+	   (printf (string "gen: &prd=%llx u0=%x u1=%x\\n")
+		  &pixel_color_prd u0 u1)
 	   (let ((pos (reinterpret_cast<float3*> &camera_position))
 		 (dir (reinterpret_cast<float3*> &ray_dir)))
 

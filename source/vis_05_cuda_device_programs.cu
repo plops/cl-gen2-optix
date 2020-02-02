@@ -37,18 +37,13 @@ inline __device__ glm::vec3 random_color(int i) {
                    ((((g) & (255))) / ((2.55e+2f))),
                    ((((b) & (255))) / ((2.55e+2f))));
 }
-extern "C" __global__ void __closesthit__radiance() {
-  auto id = optixGetPrimitiveIndex();
-  glm::vec3 &prd = *(get_prd<glm::vec3>());
-  printf("close %f %f %f", prd[0], prd[1], prd[2]);
-  prd = random_color(id);
-}
+extern "C" __global__ void __closesthit__radiance() { printf("close %llx\n"); }
 extern "C" __global__ void __anyhit__radiance() {}
 extern "C" __global__ void __miss__radiance() {
-  printf("miss %llx\n");
-  glm::vec3 &prd = *(get_prd<glm::vec3>());
-  printf("miss %f %f %f", prd[0], prd[1], prd[2]);
-  prd = glm::vec3((1.e+0f));
+  float3 *prd = get_prd<float3>();
+  prd->x = (1.e+0f);
+  prd->y = (0.0e+0f);
+  prd->z = (0.0e+0f);
 }
 extern "C" __global__ void __excetion__all() {
   printf("optix exception: %d\n", optixGetExceptionCode());
@@ -61,7 +56,7 @@ extern "C" __global__ void __raygen__renderFrame() {
   auto camera_direction = optixLaunchParams.camera_direction;
   auto camera_horizontal = optixLaunchParams.camera_horizontal;
   auto camera_vertical = optixLaunchParams.camera_vertical;
-  auto pixel_color_prd = glm::vec3((0.0e+0f));
+  glm::vec3 pixel_color_prd = glm::vec3((0.0e+0f));
   auto u0 = uint32_t(0);
   auto u1 = uint32_t(0);
   auto screen =
@@ -73,6 +68,7 @@ extern "C" __global__ void __raygen__renderFrame() {
                       (((camera_vertical) * (((screen[1]) - ((5.e-1f))))))));
   auto fbIndex = ((ix) + (((iy) * (optixLaunchParams.fbSize_x))));
   pack_pointer(&pixel_color_prd, u0, u1);
+  printf("gen: &prd=%llx u0=%x u1=%x\n", &pixel_color_prd, u0, u1);
   auto pos = reinterpret_cast<float3 *>(&camera_position);
   auto dir = reinterpret_cast<float3 *>(&ray_dir);
   optixTrace(optixLaunchParams.traversable, *pos, *dir, (0.0e+0f), (1.e+20f),
