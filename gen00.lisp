@@ -76,7 +76,10 @@
 	       ,(logprint (format nil (string "FAIL: cuda ~a ~a")
 				  remark
 				 (cl-cpp-generator2::emit-c :code code))
-			 `(res err_ err_name err_str)))
+			  `(res err_ err_name err_str)))
+	     #+nil (while true
+	       )
+	     
 	    (throw ("std::runtime_error" (string ,(format nil (string "~a")
 						   (cl-cpp-generator2::emit-c :code code)))))))))
     (defun logprint (msg &optional rest)
@@ -248,7 +251,9 @@
 			
 			(glfwGetWindowSize ,(g `_window)
 					   &width
-					   &height))
+					   &height)
+			,(logprint "resize" `(width height)))
+		      
 		      (do0 (resize width height)
 			   (dot ,(g `_pixels)
 				(resize (* width height))))
@@ -391,7 +396,7 @@
 	      (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
 	      
 	      (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
-	      (setf ,(g `_window) (glfwCreateWindow 930 930
+	      (setf ,(g `_window) (glfwCreateWindow 64 64
 						    (string "vis window")
 						    NULL
 						    NULL))
@@ -494,7 +499,7 @@
 	       (module :type OptixModule)
 	       ;;
 
-	       ,@(loop for e in `(raygen miss hitgroup)
+	       ,@(loop for e in `(raygen exception miss hitgroup)
 		    appending
 		      `((,(format nil "~a_programs" e) :type "std::vector<OptixProgramGroup>")
 			(,(format nil "~a_records_buffer" e) :type CUDABuffer))
@@ -567,20 +572,23 @@
 	     (defun createModule ()
 	       ,(set-members-clear`(,(g `module_compile_options)
 				    :maxRegisterCount 50
-				    :optLevel OPTIX_COMPILE_OPTIMIZATION_DEFAULT
-				     :debugLevel OPTIX_COMPILE_DEBUG_LEVEL_NONE))
+				     :optLevel OPTIX_COMPILE_OPTIMIZATION_LEVEL_0 ;; _DEFAULT
+				     ;; NONE
+				     :debugLevel OPTIX_COMPILE_DEBUG_LEVEL_FULL))
 	       ,(set-members-clear`(,(g `pipeline_compile_options)
 				     :traversableGraphFlags OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS
 				     :usesMotionBlur false
 				     :numPayloadValues 2
 				     :numAttributeValues  2
-				     :exceptionFlags     OPTIX_EXCEPTION_FLAG_NONE
+				     ;; NONE
+				     :exceptionFlags     OPTIX_EXCEPTION_FLAG_DEBUG
 				     :pipelineLaunchParamsVariableName (string "optixLaunchParams") 
       
 				     ))
 	       ,(set-members-clear`(,(g `pipeline_link_options)
 				           
 				     :overrideUsesMotionBlur  false
+				     :debugLevel OPTIX_COMPILE_DEBUG_LEVEL_FULL
 				     :maxTraceDepth           2))
 
 	       
@@ -604,6 +612,7 @@
 		   ,(logprint "" `(size_log log)))))
 	     ,@(loop for line in
 		    `((raygen RayGen "__raygen__renderFrame")
+		      (exception Exception "__exception__all")
 		      (miss Miss "__miss__radiance")
 		      (hitgroup HitGroup)) collect
 		    (destructuring-bind  (e f &optional entry) line
@@ -618,7 +627,7 @@
 			    ,(set-members-clear `(pg_desc
 						  :kind ,(string-upcase (format nil "OPTIX_PROGRAM_GROUP_KIND_~a" f))
 						  
-						  ,@(if (member e `(raygen miss))
+						  ,@(if (member e `(raygen exception miss))
 							`(,(intern (string-upcase (format nil "~a.module" (string-downcase f)))) ,(g `module)
 							   ,(intern (format nil "~a.entryFunctionName"
 									   (string-downcase f)))
@@ -725,6 +734,21 @@
 			    1))
 	       (incf (dot ,(g `launch_params)
 			  frameID))
+	       ,(let ((l `(frameID
+			   colorBuffer 
+			   fbSize_x 
+			   fbSize_y
+			   #+nil ,@(loop for e in `(;position direction
+						       horizontal vertical) collect
+				  (format nil "camera_~a" e))
+			   traversable)))
+		`(progn
+		   (let ,(loop for e in l collect
+			      `(,e (dot ,(g `launch_params)
+					,e)))
+		    ,(logprint "before launch"
+			       l))))
+	       
 	       ,(ox `(optixLaunch
 		      ,(g `pipeline)
 		      ,(g `stream)
@@ -997,6 +1021,10 @@
 		 (prd (deref ("get_prd<glm::vec3>")))
 		 )
 	     (declare (type "glm::vec3&" prd))
+	     (printf (string "close %f %f %f")
+		     (aref prd 0)
+		     (aref prd 1)
+		     (aref prd 2))
 	     (setf prd (random_color id))))
 	 
 	 (defun __anyhit__radiance ()
@@ -1007,7 +1035,14 @@
 		 (prd (deref ("get_prd<glm::vec3>")))
 		 )
 	     (declare (type "glm::vec3&" prd))
+	     (printf (string "miss %f %f %f")
+		     (aref prd 0)
+		     (aref prd 1)
+		     (aref prd 2))
 	     (setf prd ("glm::vec3" 1s0))))
+	 (defun __excetion__all ()
+	   (declare (values "extern \"C\" __global__ void"))
+	   (printf (string "optix exception\\n")))
 	 (defun __raygen__renderFrame ()
 	   (declare (values "extern \"C\" __global__ void"))
 	   (let ((frameID optixLaunchParams.frameID)
@@ -1031,11 +1066,15 @@
 			      (* camera_horizontal (- (aref screen 0) .5s0))
 			      (* camera_vertical (- (aref screen 1) .5s0)))
 			   ))
+		 ;(ix2 (max ix 100))
+		 ;(iy2 (max iy 100))
 		 (fbIndex (+ ix
 			     (* iy optixLaunchParams.fbSize_x))))
 	     (declare (type "const int" frameID)))
 	   (let ((pos (reinterpret_cast<float3*> &camera_position))
 		 (dir (reinterpret_cast<float3*> &ray_dir)))
+
+	    #+nil (printf (string "%03d %03d\\n") ix iy)
 	    (optixTrace
 	     optixLaunchParams.traversable
 	     *pos
@@ -1049,6 +1088,7 @@
 	     RAY_TYPE_COUNT
 	     SURFACE_RAY_TYPE
 	     u0 u1))
+	   
 	   (let (,@(loop for e in `(r g b) and i from 0 collect
 			`(,e (static_cast<int> (* 255.99s0 (aref pixel_color_prd ,i)))))
 		 (rgba (logior #xff000000 ;; fully opaque alpha

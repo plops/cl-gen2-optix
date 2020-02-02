@@ -255,6 +255,8 @@ struct State {
   std::vector<OptixProgramGroup> hitgroup_programs;
   CUDABuffer miss_records_buffer;
   std::vector<OptixProgramGroup> miss_programs;
+  CUDABuffer exception_records_buffer;
+  std::vector<OptixProgramGroup> exception_programs;
   CUDABuffer raygen_records_buffer;
   std::vector<OptixProgramGroup> raygen_programs;
   OptixModule module;

@@ -38,6 +38,16 @@ void mainLoop() {
         int width = 0;
         int height = 0;
         glfwGetWindowSize(state._window, &width, &height);
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("resize") << (" ") << (std::setw(8))
+                    << (" width=") << (width) << (std::setw(8)) << (" height=")
+                    << (height) << (std::endl) << (std::flush);
         resize(width, height);
         state._pixels.resize(((width) * (height)));
         state._framebufferResized = false;

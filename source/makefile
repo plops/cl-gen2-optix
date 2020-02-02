@@ -18,8 +18,10 @@ all:  ptx_code.c vis
 
 
 # FindCUDA.cmake
+# dont use -G or -g for optix
+# -Xcompiler=-ggdb -g
 %.ptx: %.cu
-	/opt/cuda/bin/nvcc -c --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggdb  --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.3.0 -I/home/martin/optix/include --ptx -o $@ $< 
+	/opt/cuda/bin/nvcc -c --std=c++14 -O3 -Xcompiler=-march=native   --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.3.0 -I/home/martin/optix/include --ptx -o $@ $< 
 
 # configure_optix.cmake
 ptx_code.c: vis_05_cuda_device_programs.ptx

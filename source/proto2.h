@@ -16,6 +16,7 @@ void drawGui ();
 void createContext ();
 void createModule ();
 void createRayGenPrograms ();
+void createExceptionPrograms ();
 void createMissPrograms ();
 void createHitGroupPrograms ();
 void createPipeline ();

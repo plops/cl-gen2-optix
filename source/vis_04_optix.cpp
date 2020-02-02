@@ -171,19 +171,20 @@ void createContext() {
 void createModule() {
   state.module_compile_options = {};
   state.module_compile_options.maxRegisterCount = 50;
-  state.module_compile_options.optLevel = OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
-  state.module_compile_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_NONE;
+  state.module_compile_options.optLevel = OPTIX_COMPILE_OPTIMIZATION_LEVEL_0;
+  state.module_compile_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
   state.pipeline_compile_options = {};
   state.pipeline_compile_options.traversableGraphFlags =
       OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
   state.pipeline_compile_options.usesMotionBlur = false;
   state.pipeline_compile_options.numPayloadValues = 2;
   state.pipeline_compile_options.numAttributeValues = 2;
-  state.pipeline_compile_options.exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE;
+  state.pipeline_compile_options.exceptionFlags = OPTIX_EXCEPTION_FLAG_DEBUG;
   state.pipeline_compile_options.pipelineLaunchParamsVariableName =
       "optixLaunchParams";
   state.pipeline_link_options = {};
   state.pipeline_link_options.overrideUsesMotionBlur = false;
+  state.pipeline_link_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
   state.pipeline_link_options.maxTraceDepth = 2;
   const std::string ptx = ptx_code;
   char log[2048];
@@ -250,6 +251,50 @@ void createRayGenPrograms() {
           << (":") << (__LINE__) << (" ") << (__func__) << (" ")
           << ("FAIL: optix optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, "
               "&(pg_options), log, &size_log, &(state.raygen_programs[0]))")
+          << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
+          << (std::flush);
+    };
+  };
+  if (1 < size_log) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ") << ("")
+                << (" ") << (std::setw(8)) << (" size_log=") << (size_log)
+                << (std::setw(8)) << (" log=") << (log) << (std::endl)
+                << (std::flush);
+  };
+}
+void createExceptionPrograms() {
+  state.exception_programs.resize(1);
+  OptixProgramGroupOptions pg_options;
+  OptixProgramGroupDesc pg_desc;
+  pg_options = {};
+  ;
+  pg_desc = {};
+  pg_desc.kind = OPTIX_PROGRAM_GROUP_KIND_EXCEPTION;
+  pg_desc.exception.module = state.module;
+  pg_desc.exception.entryFunctionName = "__exception__all";
+  char log[2048];
+  auto size_log = sizeof(log);
+  {
+    OptixResult res =
+        optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, &(pg_options), log,
+                                &size_log, &(state.exception_programs[0]));
+    if (!((OPTIX_SUCCESS) == (res))) {
+
+      (std::cout)
+          << (std::setw(10))
+          << (std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count())
+          << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+          << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+          << ("FAIL: optix optixProgramGroupCreate(state.oxctx, &(pg_desc), 1, "
+              "&(pg_options), log, &size_log, &(state.exception_programs[0]))")
           << (" ") << (std::setw(8)) << (" res=") << (res) << (std::endl)
           << (std::flush);
     };
@@ -549,13 +594,33 @@ void render() {
   state.launch_params_buffer.upload(&(state.launch_params), 1);
   (state.launch_params.frameID)++;
   {
+    auto frameID = state.launch_params.frameID;
+    auto colorBuffer = state.launch_params.colorBuffer;
+    auto fbSize_x = state.launch_params.fbSize_x;
+    auto fbSize_y = state.launch_params.fbSize_y;
+    auto traversable = state.launch_params.traversable;
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("before launch") << (" ") << (std::setw(8)) << (" frameID=")
+                << (frameID) << (std::setw(8)) << (" colorBuffer=")
+                << (colorBuffer) << (std::setw(8)) << (" fbSize_x=")
+                << (fbSize_x) << (std::setw(8)) << (" fbSize_y=") << (fbSize_y)
+                << (std::setw(8)) << (" traversable=") << (traversable)
+                << (std::endl) << (std::flush);
+  };
+  {
     OptixResult res = optixLaunch(
         state.pipeline, state.stream, state.launch_params_buffer.d_pointer(),
         state.launch_params_buffer._size_in_bytes,
         &(state.shader_bindings_table), state.launch_params.fbSize_x,
         state.launch_params.fbSize_y, 1);
     if (!((OPTIX_SUCCESS) == (res))) {
- 
+
       (std::cout)
           << (std::setw(10))
           << (std::chrono::high_resolution_clock::now()
