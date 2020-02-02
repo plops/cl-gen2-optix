@@ -26,18 +26,25 @@ template <typename T> static __forceinline__ __device__ T *get_prd() {
   auto u1 = optixGetPayload_1();
   return reinterpret_cast<T *>(unpack_pointer(u0, u1));
 }
-inline __device__ glm::vec3 random_color(int i) {
+inline __device__ float3 random_color(int i) {
   auto r = static_cast<int>(
       ((0x234235) + (((13) * (17) * (static_cast<unsigned>(i))))));
   auto g = static_cast<int>(
       ((0x773477) + (((7) * (3) * (5) * (static_cast<unsigned>(i))))));
   auto b = static_cast<int>(
       ((0x223766) + (((11) * (19) * (static_cast<unsigned>(i))))));
-  return glm::vec3(((((r) & (255))) / ((2.55e+2f))),
-                   ((((g) & (255))) / ((2.55e+2f))),
-                   ((((b) & (255))) / ((2.55e+2f))));
+  float3 res;
+  res.x = ((((r) & (255))) / ((2.55e+2f)));
+  res.y = ((((g) & (255))) / ((2.55e+2f)));
+  res.z = ((((b) & (255))) / ((2.55e+2f)));
+  return res;
 }
-extern "C" __global__ void __closesthit__radiance() { printf("close %llx\n"); }
+extern "C" __global__ void __closesthit__radiance() {
+  auto id = optixGetPrimitiveIndex();
+  float3 *prd = get_prd<float3>();
+  auto c = random_color(id);
+  *prd = c;
+}
 extern "C" __global__ void __anyhit__radiance() {}
 extern "C" __global__ void __miss__radiance() {
   float3 *prd = get_prd<float3>();
@@ -56,11 +63,11 @@ extern "C" __global__ void __raygen__renderFrame() {
   auto camera_direction = optixLaunchParams.camera_direction;
   auto camera_horizontal = optixLaunchParams.camera_horizontal;
   auto camera_vertical = optixLaunchParams.camera_vertical;
-  glm::vec3 pixel_color_prd = glm::vec3((0.0e+0f));
+  float3 pixel_color_prd;
   auto u0 = uint32_t(0);
   auto u1 = uint32_t(0);
   auto screen =
-      ((glm::vec2(((ix) + (.5f)), ((iy) + (.5f)))) /
+      ((glm::vec2(((.5f) + (ix)), ((.5f) + (iy)))) /
        (glm::vec2(optixLaunchParams.fbSize_x, optixLaunchParams.fbSize_y)));
   auto ray_dir =
       glm::normalize(((camera_direction) +
@@ -68,15 +75,14 @@ extern "C" __global__ void __raygen__renderFrame() {
                       (((camera_vertical) * (((screen[1]) - ((5.e-1f))))))));
   auto fbIndex = ((ix) + (((iy) * (optixLaunchParams.fbSize_x))));
   pack_pointer(&pixel_color_prd, u0, u1);
-  printf("gen: &prd=%llx u0=%x u1=%x\n", &pixel_color_prd, u0, u1);
   auto pos = reinterpret_cast<float3 *>(&camera_position);
   auto dir = reinterpret_cast<float3 *>(&ray_dir);
   optixTrace(optixLaunchParams.traversable, *pos, *dir, (0.0e+0f), (1.e+20f),
-             (0.0e+0f), OptixVisibilityMask(255), OPTIX_RAY_FLAG_DISABLE_ANYHIT,
+             (0.0e+0f), OptixVisibilityMask(255), OPTIX_RAY_FLAG_NONE,
              SURFACE_RAY_TYPE, RAY_TYPE_COUNT, SURFACE_RAY_TYPE, u0, u1);
-  auto r = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd[0])));
-  auto g = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd[1])));
-  auto b = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd[2])));
+  auto r = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd.x)));
+  auto g = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd.y)));
+  auto b = static_cast<int>((((2.5599e+2f)) * (pixel_color_prd.z)));
   auto rgba = ((4278190080) | ((r) << (0)) | ((g) << (8)) | ((b) << (16)));
   optixLaunchParams.colorBuffer[fbIndex] = rgba;
 };

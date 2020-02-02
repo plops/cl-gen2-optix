@@ -396,7 +396,7 @@
 	      (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
 	      
 	      (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
-	      (setf ,(g `_window) (glfwCreateWindow 32 32
+	      (setf ,(g `_window) (glfwCreateWindow 512 512 ;32 32
 						    (string "vis window")
 						    NULL
 						    NULL))
@@ -750,8 +750,8 @@
 		   (let ,(loop for e in l collect
 			      `(,e (dot ,(g `launch_params)
 					,e)))
-		    ,(logprint "before launch"
-			       l))))
+		     #+nil ,(logprint "before launch"
+				l))))
 	       
 	       ,(ox `(optixLaunch
 		      ,(g `pipeline)
@@ -1000,6 +1000,7 @@
 		 (u1 (optixGetPayload_1)))
 	     (return (reinterpret_cast<T*> (unpack_pointer u0 u1)))))
 
+	 #+nil
 	 (defun random_color (i)
 	   (declare (values "inline __device__ glm::vec3")
 		    (type int i))
@@ -1015,21 +1016,47 @@
 	     (return ("glm::vec3" (/ (logand r 255) 255s0)
 			    (/ (logand g 255) 255s0)
 			    (/ (logand b 255) 255s0)))))
+	 (defun random_color (i)
+	   (declare (values "inline __device__ float3")
+		    (type int i))
+	   (let ((r (static_cast<int>
+		     (+ (hex #x234235)
+			(* 13 17 ("static_cast<unsigned>" i)))))
+		 (g (static_cast<int>
+		     (+ (hex #x773477)
+			(* 7 3 5 ("static_cast<unsigned>" i)))))
+		 (b (static_cast<int>
+		     (+ (hex #x223766)
+			(* 11 19 ("static_cast<unsigned>" i)))))
+		 (res))
+	     (declare (type float3 res))
+	     ,@(loop for e in `( (/ (logand r 255) 255s0)
+			       (/ (logand g 255) 255s0)
+			       (/ (logand b 255) 255s0))
+		  and f in `(x y z)
+		collect
+		    `(setf (dot res ,f) ,e))
+	     (return res)))
 
 	 
 	 
 	 (defun __closesthit__radiance ()
 	   (declare (values "extern \"C\" __global__ void"))
-	   (printf (string "close %llx\\n"  ("get_prd<void>")))
-	   #+nil (let ((id (optixGetPrimitiveIndex))
-		 (prd (deref ("get_prd<glm::vec3>")))
-		 )
+	   ;; (printf (string "close %llx\\n"  ("get_prd<void>")))
+	   #+nil
+	   (let ((id (optixGetPrimitiveIndex))
+		 (prd (deref ("get_prd<glm::vec3>"))))
 	     (declare (type "glm::vec3&" prd))
 	      (printf (string "close %f %f %f")
 		     (aref prd 0)
 		     (aref prd 1)
 		     (aref prd 2))
-	     (setf prd (random_color id))))
+	      (setf prd (random_color id)))
+	   (let ((id (optixGetPrimitiveIndex))
+		 (prd ("get_prd<float3>"))
+		 (c (random_color id)))
+	     (declare (type "float3*" prd))
+	     (setf *prd c)))
 	 
 	 (defun __anyhit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
@@ -1069,12 +1096,13 @@
 		      collect
 			(let ((v (format nil "camera_~a" e)))
 			  `(,v (dot optixLaunchParams ,v))))
-		 (pixel_color_prd ("glm::vec3" 0s0)) ;; will be overwritten by hit or miss
+		 (pixel_color_prd ;("glm::vec3" 0s0)
+		  ) ;; will be overwritten by hit or miss
 		 (u0 (uint32_t 0))
 		 (u1 (uint32_t 0))
 		 (screen (/ ("glm::vec2"
-			     (+ ix .5f)
-			     (+ iy .5f))
+			     (+ .5f ix)
+			     (+ .5f iy))
 			    ("glm::vec2"
 			     (dot optixLaunchParams fbSize_x)
 			     (dot optixLaunchParams fbSize_y))))
@@ -1088,10 +1116,12 @@
 		 (fbIndex (+ ix
 			     (* iy optixLaunchParams.fbSize_x))))
 	     (declare (type "const int" frameID)
-		      (type "glm::vec3" pixel_color_prd)))
+		      (type float3 ; "glm::vec3"
+			    pixel_color_prd
+			    )))
 	   
 	   (pack_pointer &pixel_color_prd u0 u1)
-	   (printf (string "gen: &prd=%llx u0=%x u1=%x\\n")
+	   #+nil (printf (string "gen: &prd=%llx u0=%x u1=%x\\n")
 		  &pixel_color_prd u0 u1)
 	   (let ((pos (reinterpret_cast<float3*> &camera_position))
 		 (dir (reinterpret_cast<float3*> &ray_dir)))
@@ -1106,14 +1136,22 @@
 	     1s20 ;; tmax
 	     0s0  ;; ray time
 	     (OptixVisibilityMask 255)
-	     OPTIX_RAY_FLAG_DISABLE_ANYHIT
+	     OPTIX_RAY_FLAG_NONE ;;DISABLE_ANYHIT
 	     SURFACE_RAY_TYPE
 	     RAY_TYPE_COUNT
 	     SURFACE_RAY_TYPE
 	     u0 u1))
-	   
-	   (let (,@(loop for e in `(r g b) and i from 0 collect
-			`(,e (static_cast<int> (* 255.99s0 (aref pixel_color_prd ,i)))))
+	   #+nil (do0 ,@(loop for e in `(screen[0] screen[1]) collect
+		  `(printf (string ,(format nil "~a=%6.3f " e))
+			   ,e))
+		(printf (string
+			 "%d \\n")
+			 frameID))
+	   (let (,@(loop for e in `(r g b) and i from 0 and f in `(x y z) collect
+			`(,e (static_cast<int> (* 255.99s0
+						  (dot pixel_color_prd ,f)
+						  ;(aref pixel_color_prd ,i)
+						  ))))
 		 (rgba (logior #xff000000 ;; fully opaque alpha
 			       (<< r 0)
 			       (<< g 8)
@@ -1262,6 +1300,7 @@
 				  (type "std::vector<glm::ivec3>" _index)))
 		       (defun add_unit_cube (m)
 			 (declare (type "const affine_space_t&" m))
+			 ,(logprint "unit cube")
 			 (let ((first_vertex_id (static_cast<int>
 						 (_vertex.size))))
 			   ,@(loop for (x y z) in `((0 0 0)
@@ -1273,10 +1312,14 @@
 						    (0 1 1)
 						    (1 1 1))
 				collect
-				  `(_vertex.push_back
-				    (xfm_point m ("glm::vec3" ,(* 1s0 x)
-						      ,(* 1s0 y)
-						      ,(* 1s0 z))))))
+				  `(progn
+				     (let ((p (xfm_point m ("glm::vec3" ,(* 1s0 x)
+									,(* 1s0 y)
+									,(* 1s0 z)))))
+				       ,(logprint "v" `((aref p 0)
+							(aref p 1)
+							(aref p 2)))
+				       (_vertex.push_back p)))))
 			 (let ((indices[] (curly 0 1 3  2 3 0
 						 5 7 6  5 6 4
 						 0 4 5  0 5 1
@@ -1295,6 +1338,9 @@
 			 (declare  (type "const glm::vec3&"
 					 center
 					 size))
+			 ,(logprint "unit cube" `((aref size 0)
+						  (aref size 1)
+						  (aref size 2)))
 			 (let ((m
 				(curly
 				 (curly

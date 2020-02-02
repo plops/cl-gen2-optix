@@ -61,15 +61,135 @@ public:
   std::vector<glm::vec3> _vertex;
   std::vector<glm::ivec3> _index;
   void add_unit_cube(const affine_space_t &m) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("unit cube") << (" ") << (std::endl) << (std::flush);
     auto first_vertex_id = static_cast<int>(_vertex.size());
-    _vertex.push_back(xfm_point(m, glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f))));
-    _vertex.push_back(xfm_point(m, glm::vec3((1.e+0f), (0.0e+0f), (0.0e+0f))));
-    _vertex.push_back(xfm_point(m, glm::vec3((0.0e+0f), (1.e+0f), (0.0e+0f))));
-    _vertex.push_back(xfm_point(m, glm::vec3((1.e+0f), (1.e+0f), (0.0e+0f))));
-    _vertex.push_back(xfm_point(m, glm::vec3((0.0e+0f), (0.0e+0f), (1.e+0f))));
-    _vertex.push_back(xfm_point(m, glm::vec3((1.e+0f), (0.0e+0f), (1.e+0f))));
-    _vertex.push_back(xfm_point(m, glm::vec3((0.0e+0f), (1.e+0f), (1.e+0f))));
-    _vertex.push_back(xfm_point(m, glm::vec3((1.e+0f), (1.e+0f), (1.e+0f))));
+    {
+      auto p = xfm_point(m, glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f)));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("v") << (" ") << (std::setw(8)) << (" p[0]=")
+                  << (p[0]) << (std::setw(8)) << (" p[1]=") << (p[1])
+                  << (std::setw(8)) << (" p[2]=") << (p[2]) << (std::endl)
+                  << (std::flush);
+      _vertex.push_back(p);
+    };
+    {
+      auto p = xfm_point(m, glm::vec3((1.e+0f), (0.0e+0f), (0.0e+0f)));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("v") << (" ") << (std::setw(8)) << (" p[0]=")
+                  << (p[0]) << (std::setw(8)) << (" p[1]=") << (p[1])
+                  << (std::setw(8)) << (" p[2]=") << (p[2]) << (std::endl)
+                  << (std::flush);
+      _vertex.push_back(p);
+    };
+    {
+      auto p = xfm_point(m, glm::vec3((0.0e+0f), (1.e+0f), (0.0e+0f)));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("v") << (" ") << (std::setw(8)) << (" p[0]=")
+                  << (p[0]) << (std::setw(8)) << (" p[1]=") << (p[1])
+                  << (std::setw(8)) << (" p[2]=") << (p[2]) << (std::endl)
+                  << (std::flush);
+      _vertex.push_back(p);
+    };
+    {
+      auto p = xfm_point(m, glm::vec3((1.e+0f), (1.e+0f), (0.0e+0f)));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("v") << (" ") << (std::setw(8)) << (" p[0]=")
+                  << (p[0]) << (std::setw(8)) << (" p[1]=") << (p[1])
+                  << (std::setw(8)) << (" p[2]=") << (p[2]) << (std::endl)
+                  << (std::flush);
+      _vertex.push_back(p);
+    };
+    {
+      auto p = xfm_point(m, glm::vec3((0.0e+0f), (0.0e+0f), (1.e+0f)));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("v") << (" ") << (std::setw(8)) << (" p[0]=")
+                  << (p[0]) << (std::setw(8)) << (" p[1]=") << (p[1])
+                  << (std::setw(8)) << (" p[2]=") << (p[2]) << (std::endl)
+                  << (std::flush);
+      _vertex.push_back(p);
+    };
+    {
+      auto p = xfm_point(m, glm::vec3((1.e+0f), (0.0e+0f), (1.e+0f)));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("v") << (" ") << (std::setw(8)) << (" p[0]=")
+                  << (p[0]) << (std::setw(8)) << (" p[1]=") << (p[1])
+                  << (std::setw(8)) << (" p[2]=") << (p[2]) << (std::endl)
+                  << (std::flush);
+      _vertex.push_back(p);
+    };
+    {
+      auto p = xfm_point(m, glm::vec3((0.0e+0f), (1.e+0f), (1.e+0f)));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("v") << (" ") << (std::setw(8)) << (" p[0]=")
+                  << (p[0]) << (std::setw(8)) << (" p[1]=") << (p[1])
+                  << (std::setw(8)) << (" p[2]=") << (p[2]) << (std::endl)
+                  << (std::flush);
+      _vertex.push_back(p);
+    };
+    {
+      auto p = xfm_point(m, glm::vec3((1.e+0f), (1.e+0f), (1.e+0f)));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("v") << (" ") << (std::setw(8)) << (" p[0]=")
+                  << (p[0]) << (std::setw(8)) << (" p[1]=") << (p[1])
+                  << (std::setw(8)) << (" p[2]=") << (p[2]) << (std::endl)
+                  << (std::flush);
+      _vertex.push_back(p);
+    };
     int indices[] = {0, 1, 3, 2, 3, 0, 5, 7, 6, 5, 6, 4, 0, 4, 5, 0, 5, 1,
                      2, 3, 7, 2, 7, 6, 1, 5, 7, 1, 7, 3, 4, 0, 2, 4, 2, 6};
     for (int i = 0; i < 12; (i) += (1)) {
@@ -80,6 +200,17 @@ public:
     };
   }
   void add_cube(const glm::vec3 &center, const glm::vec3 &size) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("unit cube") << (" ") << (std::setw(8)) << (" size[0]=")
+                << (size[0]) << (std::setw(8)) << (" size[1]=") << (size[1])
+                << (std::setw(8)) << (" size[2]=") << (size[2]) << (std::endl)
+                << (std::flush);
     const affine_space_t m = {{glm::vec3(size.x, 0, 0), glm::vec3(0, size.y, 0),
                                glm::vec3(0, 0, size.z)},
                               ((center) - ((((5.e-1f)) * (size))))};
