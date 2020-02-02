@@ -396,7 +396,7 @@
 	      (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
 	      
 	      (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
-	      (setf ,(g `_window) (glfwCreateWindow 64 64
+	      (setf ,(g `_window) (glfwCreateWindow 32 32
 						    (string "vis window")
 						    NULL
 						    NULL))
@@ -580,8 +580,12 @@
 				     :usesMotionBlur false
 				     :numPayloadValues 2
 				     :numAttributeValues  2
-				     ;; NONE
-				     :exceptionFlags     OPTIX_EXCEPTION_FLAG_DEBUG
+				     
+				     :exceptionFlags
+				     #+nil OPTIX_EXCEPTION_FLAG_NONE
+				     #-nil (logior OPTIX_EXCEPTION_FLAG_DEBUG
+								OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW
+								 OPTIX_EXCEPTION_FLAG_TRACE_DEPTH)
 				     :pipelineLaunchParamsVariableName (string "optixLaunchParams") 
       
 				     ))
@@ -1021,11 +1025,11 @@
 		 (prd (deref ("get_prd<glm::vec3>")))
 		 )
 	     (declare (type "glm::vec3&" prd))
-	     (printf (string "close %f %f %f")
+	     #+nil (printf (string "close %f %f %f")
 		     (aref prd 0)
 		     (aref prd 1)
 		     (aref prd 2))
-	     (setf prd (random_color id))))
+	     #+nil (setf prd (random_color id))))
 	 
 	 (defun __anyhit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
@@ -1039,10 +1043,11 @@
 		     (aref prd 0)
 		     (aref prd 1)
 		     (aref prd 2))
-	     (setf prd ("glm::vec3" 1s0))))
+	     #+nil (setf prd ("glm::vec3" 1s0))))
 	 (defun __excetion__all ()
 	   (declare (values "extern \"C\" __global__ void"))
-	   (printf (string "optix exception\\n")))
+	   (printf (string "optix exception: %d\\n")
+		   (optixGetExceptionCode)))
 	 (defun __raygen__renderFrame ()
 	   (declare (values "extern \"C\" __global__ void"))
 	   (let ((frameID optixLaunchParams.frameID)

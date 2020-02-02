@@ -42,7 +42,7 @@ void initWindow() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-    state._window = glfwCreateWindow(64, 64, "vis window", NULL, NULL);
+    state._window = glfwCreateWindow(32, 32, "vis window", NULL, NULL);
 
     (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()

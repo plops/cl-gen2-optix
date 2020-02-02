@@ -40,16 +40,15 @@ inline __device__ glm::vec3 random_color(int i) {
 extern "C" __global__ void __closesthit__radiance() {
   auto id = optixGetPrimitiveIndex();
   glm::vec3 &prd = *(get_prd<glm::vec3>());
-  printf("close %f %f %f", prd[0], prd[1], prd[2]);
-  prd = random_color(id);
 }
 extern "C" __global__ void __anyhit__radiance() {}
 extern "C" __global__ void __miss__radiance() {
   glm::vec3 &prd = *(get_prd<glm::vec3>());
   printf("miss %f %f %f", prd[0], prd[1], prd[2]);
-  prd = glm::vec3((1.e+0f));
 }
-extern "C" __global__ void __excetion__all() { printf("optix exception\n"); }
+extern "C" __global__ void __excetion__all() {
+  printf("optix exception: %d\n", optixGetExceptionCode());
+}
 extern "C" __global__ void __raygen__renderFrame() {
   const int frameID = optixLaunchParams.frameID;
   auto ix = optixGetLaunchIndex().x;

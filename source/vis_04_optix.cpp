@@ -179,7 +179,9 @@ void createModule() {
   state.pipeline_compile_options.usesMotionBlur = false;
   state.pipeline_compile_options.numPayloadValues = 2;
   state.pipeline_compile_options.numAttributeValues = 2;
-  state.pipeline_compile_options.exceptionFlags = OPTIX_EXCEPTION_FLAG_DEBUG;
+  state.pipeline_compile_options.exceptionFlags =
+      ((OPTIX_EXCEPTION_FLAG_DEBUG) | (OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW) |
+       (OPTIX_EXCEPTION_FLAG_TRACE_DEPTH));
   state.pipeline_compile_options.pipelineLaunchParamsVariableName =
       "optixLaunchParams";
   state.pipeline_link_options = {};
