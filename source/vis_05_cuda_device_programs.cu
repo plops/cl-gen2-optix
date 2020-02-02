@@ -12,7 +12,7 @@ extern "C" __constant__ LaunchParams optixLaunchParams;
 enum { SURFACE_RAY_TYPE = 0, RAY_TYPE_COUNT };
 static __forceinline__ __device__ void *unpack_pointer(uint32_t i0,
                                                        uint32_t i1) {
-  auto uptr = (((static_cast<uint64_t>(i0)) << (32)) | (i1));
+  const uint64_t uptr = (((static_cast<uint64_t>(i0)) << (32)) | (i1));
   return reinterpret_cast<void *>(uptr);
 }
 static __forceinline__ __device__ void pack_pointer(void *ptr, uint32_t &i0,
@@ -44,7 +44,6 @@ extern "C" __global__ void __closesthit__radiance() {
 extern "C" __global__ void __anyhit__radiance() {}
 extern "C" __global__ void __miss__radiance() {
   glm::vec3 &prd = *(get_prd<glm::vec3>());
-  printf("miss %f %f %f", prd[0], prd[1], prd[2]);
 }
 extern "C" __global__ void __excetion__all() {
   printf("optix exception: %d\n", optixGetExceptionCode());

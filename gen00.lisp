@@ -982,7 +982,7 @@
 	   (let ((uptr (logior (<< (static_cast<uint64_t> i0)
 				   32)
 			       i1)))
-	     ;(declare (type "const uint64_t" uptr))
+	     (declare (type "const uint64_t" uptr))
 	     (return (reinterpret_cast<void*> uptr))))
 
 	 (defun pack_pointer (ptr i0 i1)
@@ -1039,7 +1039,7 @@
 		 (prd (deref ("get_prd<glm::vec3>")))
 		 )
 	     (declare (type "glm::vec3&" prd))
-	     (printf (string "miss %f %f %f")
+	     #+nil (printf (string "miss %f %f %f")
 		     (aref prd 0)
 		     (aref prd 1)
 		     (aref prd 2))
