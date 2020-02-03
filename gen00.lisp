@@ -1042,7 +1042,7 @@
 	 
 	 (defun __closesthit__radiance ()
 	   (declare (values "extern \"C\" __global__ void"))
-	   ;; (printf (string "close %llx\\n"  ("get_prd<void>")))
+	   ;;(printf (string "close %llx\\n"  ("get_prd<void>")))
 	   #+nil
 	   (let ((id (optixGetPrimitiveIndex))
 		 (prd (deref ("get_prd<glm::vec3>"))))
@@ -1056,7 +1056,11 @@
 		 (prd ("get_prd<float3>"))
 		 (c (random_color id)))
 	     (declare (type "float3*" prd))
-	     (setf *prd c)))
+	     (setf prd->x 0s0
+		   prd->y 1s0
+		   prd->z 0s0)
+	     ;(setf *prd c)
+	     ))
 	 
 	 (defun __anyhit__radiance ()
 	   (declare (values "extern \"C\" __global__ void")))
@@ -1064,7 +1068,7 @@
 	   (declare (values "extern \"C\" __global__ void"))
 	   (let ((prd ("get_prd<float3>")))
 	     (declare (type float3* prd))
-	     (setf prd->x 1s0
+	     (setf prd->x .1s0
 		   prd->y 0s0
 		   prd->z 0s0))
 	   #+nil
@@ -1083,7 +1087,7 @@
 		     (aref prd 1)
 		     (aref prd 2))
 	   (setf prd ("glm::vec3" 1s0))))
-	 (defun __excetion__all ()
+	 (defun __exception__all ()
 	   (declare (values "extern \"C\" __global__ void"))
 	   (printf (string "optix exception: %d\\n")
 		   (optixGetExceptionCode)))
@@ -1109,17 +1113,19 @@
 		 (ray_dir ("glm::normalize"
 			   (+ camera_direction
 			      (* camera_horizontal (- (aref screen 0) .5s0))
-			      (* camera_vertical (- (aref screen 1) .5s0)))
-			   ))
+			      (* camera_vertical (- (aref screen 1) .5s0)))))
 		 ;(ix2 (max ix 100))
 		 ;(iy2 (max iy 100))
 		 (fbIndex (+ ix
 			     (* iy optixLaunchParams.fbSize_x))))
 	     (declare (type "const int" frameID)
 		      (type float3 ; "glm::vec3"
-			    pixel_color_prd
-			    )))
-	   
+			    pixel_color_prd)))
+	   (printf (string "pos: %f %f %f dir: %f %f %f\\n")
+		   ,@(loop for e in `(camera_position ray_dir)
+			appending
+			  (loop for i below 3 collect
+			       `(aref ,e ,i))))
 	   (pack_pointer &pixel_color_prd u0 u1)
 	   #+nil (printf (string "gen: &prd=%llx u0=%x u1=%x\\n")
 		  &pixel_color_prd u0 u1)
@@ -1158,8 +1164,6 @@
 			       (<< b 16)))))
 	   (setf (aref optixLaunchParams.colorBuffer fbIndex)
 		 rgba)))))
-
-  
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"

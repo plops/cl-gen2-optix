@@ -43,16 +43,18 @@ extern "C" __global__ void __closesthit__radiance() {
   auto id = optixGetPrimitiveIndex();
   float3 *prd = get_prd<float3>();
   auto c = random_color(id);
-  *prd = c;
+  prd->x = (0.0e+0f);
+  prd->y = (1.e+0f);
+  prd->z = (0.0e+0f);
 }
 extern "C" __global__ void __anyhit__radiance() {}
 extern "C" __global__ void __miss__radiance() {
   float3 *prd = get_prd<float3>();
-  prd->x = (1.e+0f);
+  prd->x = (1.e-1f);
   prd->y = (0.0e+0f);
   prd->z = (0.0e+0f);
 }
-extern "C" __global__ void __excetion__all() {
+extern "C" __global__ void __exception__all() {
   printf("optix exception: %d\n", optixGetExceptionCode());
 }
 extern "C" __global__ void __raygen__renderFrame() {
@@ -74,6 +76,9 @@ extern "C" __global__ void __raygen__renderFrame() {
                       (((camera_horizontal) * (((screen[0]) - ((5.e-1f)))))) +
                       (((camera_vertical) * (((screen[1]) - ((5.e-1f))))))));
   auto fbIndex = ((ix) + (((iy) * (optixLaunchParams.fbSize_x))));
+  printf("pos: %f %f %f dir: %f %f %f\n", camera_position[0],
+         camera_position[1], camera_position[2], ray_dir[0], ray_dir[1],
+         ray_dir[2]);
   pack_pointer(&pixel_color_prd, u0, u1);
   auto pos = reinterpret_cast<float3 *>(&camera_position);
   auto dir = reinterpret_cast<float3 *>(&ray_dir);

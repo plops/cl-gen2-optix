@@ -2,10 +2,11 @@ CXX=g++
 LDFLAGS=-lglfw  -lGL -ldl \
 -L/opt/cuda/targets/x86_64-linux/lib -lcudart -lcuda \
 -lnvoptix
-CXXFLAGS=-ffast-math -std=gnu++1z -O0 \
--I/opt/cuda/targets/x86_64-linux/include \
+CFLAGS=-I/opt/cuda/targets/x86_64-linux/include \
 -I/home/martin/optix/include \
 -march=native #-ggdb -fsanitize=address
+
+CXXFLAGS=-ffast-math -std=gnu++1z -O0 $(CFLAGS)
 
 CFILES:=$(shell find .| grep .cpp$)
 CUFILES:=$(shell ls | grep .cu$)
@@ -28,7 +29,7 @@ ptx_code.c: vis_05_cuda_device_programs.ptx
 	bin2c -c --padd 0 --type "char" --name ptx_code $< > $@
 
 ptx_code.o: ptx_code.c
-	gcc $(CXXFLAGS) -c -o $@ $^ -fpic #--no-pic --no-pie
+	gcc $(CFLAGS) -c -o $@ $^ -fpic #--no-pic --no-pie
 
 %.o: %.cpp globals.h 
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
