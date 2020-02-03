@@ -396,7 +396,7 @@
 	      (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
 	      
 	      (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
-	      (setf ,(g `_window) (glfwCreateWindow 512 512 ;32 32
+	      (setf ,(g `_window) (glfwCreateWindow 32 32
 						    (string "vis window")
 						    NULL
 						    NULL))
@@ -742,16 +742,17 @@
 			   colorBuffer 
 			   fbSize_x 
 			   fbSize_y
-			   #+nil ,@(loop for e in `(;position direction
-						       horizontal vertical) collect
-				  (format nil "camera_~a" e))
-			   traversable)))
-		`(progn
-		   (let ,(loop for e in l collect
-			      `(,e (dot ,(g `launch_params)
-					,e)))
-		     #+nil ,(logprint "before launch"
-				l))))
+			   traversable
+			   ,@(loop for e in `(position direction
+						       horizontal vertical) appending
+				  (loop for i below 3 collect
+				       `(aref ,(format nil "camera_~a" e)
+					      ,i)))))
+		      )
+		  (logprint "before launch"
+			`(,@(loop for e in l collect
+				 `(dot ,(g `launch_params)
+				       ,e)))))
 	       
 	       ,(ox `(optixLaunch
 		      ,(g `pipeline)
