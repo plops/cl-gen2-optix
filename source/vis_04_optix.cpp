@@ -595,46 +595,10 @@ void render() {
   };
   state.launch_params_buffer.upload(&(state.launch_params), 1);
   (state.launch_params.frameID)++;
-
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("before launch")
-      << (" ") << (std::setw(8)) << (" state.launch_params.frameID=")
-      << (state.launch_params.frameID) << (std::setw(8))
-      << (" state.launch_params.colorBuffer=")
-      << (state.launch_params.colorBuffer) << (std::setw(8))
-      << (" state.launch_params.fbSize_x=") << (state.launch_params.fbSize_x)
-      << (std::setw(8)) << (" state.launch_params.fbSize_y=")
-      << (state.launch_params.fbSize_y) << (std::setw(8))
-      << (" state.launch_params.traversable=")
-      << (state.launch_params.traversable) << (std::setw(8))
-      << (" state.launch_params.camera_position[0]=")
-      << (state.launch_params.camera_position[0]) << (std::setw(8))
-      << (" state.launch_params.camera_position[1]=")
-      << (state.launch_params.camera_position[1]) << (std::setw(8))
-      << (" state.launch_params.camera_position[2]=")
-      << (state.launch_params.camera_position[2]) << (std::setw(8))
-      << (" state.launch_params.camera_direction[0]=")
-      << (state.launch_params.camera_direction[0]) << (std::setw(8))
-      << (" state.launch_params.camera_direction[1]=")
-      << (state.launch_params.camera_direction[1]) << (std::setw(8))
-      << (" state.launch_params.camera_direction[2]=")
-      << (state.launch_params.camera_direction[2]) << (std::setw(8))
-      << (" state.launch_params.camera_horizontal[0]=")
-      << (state.launch_params.camera_horizontal[0]) << (std::setw(8))
-      << (" state.launch_params.camera_horizontal[1]=")
-      << (state.launch_params.camera_horizontal[1]) << (std::setw(8))
-      << (" state.launch_params.camera_horizontal[2]=")
-      << (state.launch_params.camera_horizontal[2]) << (std::setw(8))
-      << (" state.launch_params.camera_vertical[0]=")
-      << (state.launch_params.camera_vertical[0]) << (std::setw(8))
-      << (" state.launch_params.camera_vertical[1]=")
-      << (state.launch_params.camera_vertical[1]) << (std::setw(8))
-      << (" state.launch_params.camera_vertical[2]=")
-      << (state.launch_params.camera_vertical[2]) << (std::endl)
-      << (std::flush);
+  camera_t camera = {glm::vec3((-1.e+1f), (2.e+0f), (-1.2e+1f)),
+                     glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f)),
+                     glm::vec3((0.0e+0f), (1.e+0f), (0.0e+0f))};
+  set_camera(camera);
   {
     OptixResult res = optixLaunch(
         state.pipeline, state.stream, state.launch_params_buffer.d_pointer(),

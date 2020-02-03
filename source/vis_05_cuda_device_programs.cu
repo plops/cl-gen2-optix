@@ -76,9 +76,6 @@ extern "C" __global__ void __raygen__renderFrame() {
                       (((camera_horizontal) * (((screen[0]) - ((5.e-1f)))))) +
                       (((camera_vertical) * (((screen[1]) - ((5.e-1f))))))));
   auto fbIndex = ((ix) + (((iy) * (optixLaunchParams.fbSize_x))));
-  printf("pos: %f %f %f dir: %f %f %f\n", camera_position[0],
-         camera_position[1], camera_position[2], ray_dir[0], ray_dir[1],
-         ray_dir[2]);
   pack_pointer(&pixel_color_prd, u0, u1);
   auto pos = reinterpret_cast<float3 *>(&camera_position);
   auto dir = reinterpret_cast<float3 *>(&ray_dir);

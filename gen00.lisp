@@ -396,7 +396,7 @@
 	      (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
 	      
 	      (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
-	      (setf ,(g `_window) (glfwCreateWindow 32 32
+	      (setf ,(g `_window) (glfwCreateWindow 512 512 ;32 32
 						    (string "vis window")
 						    NULL
 						    NULL))
@@ -738,7 +738,13 @@
 			    1))
 	       (incf (dot ,(g `launch_params)
 			  frameID))
-	       ,(let ((l `(frameID
+	       (let ((camera (curly ("glm::vec3" -10s0 2s0 -12s0)
+				    ("glm::vec3" 0s0 0s0 0s0)
+				    ("glm::vec3" 0s0 1s0 0s0))))
+		 (declare (type camera_t camera))
+		 (set_camera camera))
+	       
+	       #+nil ,(let ((l `(frameID
 			   colorBuffer 
 			   fbSize_x 
 			   fbSize_y
@@ -1122,7 +1128,7 @@
 	     (declare (type "const int" frameID)
 		      (type float3 ; "glm::vec3"
 			    pixel_color_prd)))
-	   (printf (string "pos: %f %f %f dir: %f %f %f\\n")
+	   #+nil(printf (string "pos: %f %f %f dir: %f %f %f\\n")
 		   ,@(loop for e in `(camera_position ray_dir)
 			appending
 			  (loop for i below 3 collect
