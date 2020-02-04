@@ -450,6 +450,8 @@
 		      "imgui/imgui_impl_opengl2.h")
 	     (include <algorithm>
 		      <string>)
+	     (include <glm/glm.hpp>
+		      <glm/gtc/matrix_transform.hpp>)
 	     (defun initGui ()
 	       ,(logprint "initGui" '())
 	       (IMGUI_CHECKVERSION)
@@ -472,7 +474,31 @@
 	       (ImGui_ImplOpenGL2_NewFrame)
 	       (ImGui_ImplGlfw_NewFrame)
 	       ("ImGui::NewFrame")
-	       	       
+
+	       (do0
+		("ImGui::Begin" (string "camera"))
+
+		(progn
+		 (let ((goal 0s0))
+		   (declare (type static float))
+		   (let ((current goal))
+		     ("ImGui::SliderFloat" (string "cam-rotation") &current 0s0 360s0))
+		   (unless (== goal current)
+		     (setf goal current))
+		   (let ((m ("glm::rotate"
+			     ("glm::mat4" 1s0)
+			     ("glm::radians" current)
+			     ("glm::vec3" 0s0 0s0 1s0))))
+		     (let ((camera (curly
+				    ("glm::vec3"
+				     (* m
+					("glm::vec4" -10s0 2s0 -12s0 1s0)))
+				    ("glm::vec3" 0s0 0s0 0s0)
+				    ("glm::vec3" 0s0 1s0 0s0))))
+		      (declare (type camera_t camera))
+		      (set_camera camera)))))
+		("ImGui::End"))
+	       
 	       (let ((b true))
 		      ("ImGui::ShowDemoWindow" &b))
 	       ("ImGui::Render")
